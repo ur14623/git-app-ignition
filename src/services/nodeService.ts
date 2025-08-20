@@ -196,7 +196,7 @@ export const nodeService = {
 
   // Undeploy a version
   async undeployNodeVersion(id: string, version: number): Promise<{ status: string }> {
-    const response = await axiosInstance.patch(`node-families/${id}/versions/${version}/undepoly/`);
+    const response = await axiosInstance.post(`node-families/${id}/versions/${version}/undeploy/`);
     return response.data;
   },
 
@@ -294,7 +294,7 @@ export const nodeService = {
 
   // Add parameters to version
   async addParametersToVersion(nodeId: string, version: number, parameterIds: string[]): Promise<any> {
-    const response = await axiosInstance.patch(`nodes/${nodeId}/version/${version}/add_parameter/`, {
+    const response = await axiosInstance.post(`node-families/${nodeId}/versions/${version}/add_parameter/`, {
       parameter_ids: parameterIds
     });
     return response.data;
@@ -302,9 +302,31 @@ export const nodeService = {
 
   // Remove parameters from version
   async removeParametersFromVersion(nodeId: string, version: number, parameterIds: string[]): Promise<any> {
-    const response = await axiosInstance.patch(`nodes/${nodeId}/version/${version}/remove_parameter/`, {
+    const response = await axiosInstance.post(`node-families/${nodeId}/versions/${version}/remove_parameter/`, {
       parameter_ids: parameterIds
     });
+    return response.data;
+  },
+
+  // Execute node for testing
+  async executeNode(familyId: string, versionId: string, subnodeId: string): Promise<any> {
+    const response = await axiosInstance.post('node-test/execute-node/', {
+      family_id: familyId,
+      version_id: versionId,
+      subnode_id: subnodeId
+    });
+    return response.data;
+  },
+
+  // Stop node execution
+  async stopNodeExecution(executionId: string): Promise<any> {
+    const response = await axiosInstance.post(`node-test/${executionId}/stop/`);
+    return response.data;
+  },
+
+  // Get execution logs
+  async getExecutionLogs(executionId: string): Promise<any> {
+    const response = await axiosInstance.get(`node-test/${executionId}/logs/`);
     return response.data;
   },
 

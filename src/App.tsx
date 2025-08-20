@@ -19,6 +19,7 @@ import { SubnodesPage } from "@/pages/subnodes/SubnodesPage";
 import { SubnodeDetailPage } from "@/pages/subnodes/subnode-detail/SubnodeDetailPage";
 import { EditSubnodePage } from "@/pages/subnodes/edit-subnode/EditSubnodePage";
 import { EditVersionPage } from "@/pages/subnodes/edit-version/EditVersionPage";
+import { EditVersionPage as EditNodeVersionPage } from "@/pages/nodes/edit-version/EditVersionPage";
 import { CreateSubnodePage } from "@/pages/subnodes/create-subnode/CreateSubnodePage";
 import { ParametersPage } from "@/pages/parameters/ParametersPage";
 import { ParameterDetailPage } from "@/pages/parameters/parameter-detail/ParameterDetailPage";
@@ -51,6 +52,7 @@ const App = () => (
               <Route path="/nodes/new" element={<CreateNodePage />} />
               <Route path="/nodes/:id" element={<NodeDetailPage />} />
               <Route path="/nodes/:id/edit" element={<EditNodePage />} />
+              <Route path="/nodes/:id/edit-version" element={<EditNodeVersionPage />} />
               <Route path="/nodes/:id/test" element={<TestNodePage />} />
               <Route path="/subnodes" element={<SubnodesPage />} />
               <Route path="/subnodes/:id" element={<SubnodeDetailPage />} />

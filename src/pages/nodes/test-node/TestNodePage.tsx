@@ -7,8 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Play, Square, RefreshCw } from 'lucide-react';
-import { nodeService } from '@/services/nodeService';
-import { useState as useNodeState } from 'react';
+import { nodeService, type NodeVersionDetail } from '@/services/nodeService';
 
 interface LogEntry {
   id: string;
@@ -21,30 +20,32 @@ interface ExecutionStatus {
   isRunning: boolean;
   startTime?: string;
   duration?: number;
+  executionId?: string;
 }
 
 export function TestNodePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [node, setNode] = useState<any>(null);
+  const [nodeVersion, setNodeVersion] = useState<NodeVersionDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchNode = async () => {
+    const fetchNodeVersion = async () => {
       if (!id) return;
       try {
         setLoading(true);
-        const nodeData = await nodeService.getNode(id);
-        setNode(nodeData);
+        // Get the latest version or version 1 by default
+        const versionData = await nodeService.getNodeVersionDetail(id, 1);
+        setNodeVersion(versionData);
       } catch (err: any) {
-        setError(err.message || 'Failed to fetch node');
+        setError(err.message || 'Failed to fetch node version');
       } finally {
         setLoading(false);
       }
     };
-    fetchNode();
+    fetchNodeVersion();
   }, [id]);
   
   const [selectedSubnodeId, setSelectedSubnodeId] = useState<string>('');
@@ -71,7 +72,7 @@ export function TestNodePage() {
   };
 
   const handleStartExecution = async () => {
-    if (!selectedSubnodeId) {
+    if (!selectedSubnodeId || !nodeVersion) {
       toast({
         title: "Selection Required",
         description: "Please select a subnode to execute",
@@ -80,47 +81,114 @@ export function TestNodePage() {
       return;
     }
 
-    setExecutionStatus({ isRunning: true, startTime: new Date().toISOString() });
-    setLogs([]);
-    
-    addLog('info', `Starting execution of node "${node?.name}" with subnode ID: ${selectedSubnodeId}`);
-    addLog('debug', 'Initializing execution environment...');
-    
+    const selectedSubnode = nodeVersion.subnodes.find(s => s.version.id === selectedSubnodeId);
+    if (!selectedSubnode) return;
+
     try {
-      // Simulate execution process with mock logs
-      await simulateExecution();
-    } catch (error) {
-      addLog('error', `Execution failed: ${error}`);
-    } finally {
+      setExecutionStatus({ isRunning: true, startTime: new Date().toISOString() });
+      setLogs([]);
+      
+      addLog('info', `Starting execution of node "${nodeVersion.family_name}" with subnode: ${selectedSubnode.family.name}`);
+      
+      // Call the execute API
+      const executionResult = await nodeService.executeNode(
+        nodeVersion.family,
+        nodeVersion.id,
+        selectedSubnodeId
+      );
+      
+      setExecutionStatus(prev => ({ 
+        ...prev, 
+        executionId: executionResult.id
+      }));
+      
+      addLog('info', `Execution started with ID: ${executionResult.id}`);
+      addLog('info', `Status: ${executionResult.status}`);
+      
+      // Start polling for logs
+      startLogPolling(executionResult.id);
+      
+    } catch (error: any) {
+      addLog('error', `Execution failed: ${error.message}`);
       setExecutionStatus(prev => ({ 
         ...prev, 
         isRunning: false,
         duration: prev.startTime ? Date.now() - new Date(prev.startTime).getTime() : 0
       }));
-      addLog('info', 'Execution completed');
     }
   };
 
-  const simulateExecution = async () => {
-    const steps = [
-      { delay: 1000, level: 'info' as const, message: 'Loading node configuration...' },
-      { delay: 800, level: 'debug' as const, message: 'Validating input parameters...' },
-      { delay: 1200, level: 'info' as const, message: 'Executing subnode logic...' },
-      { delay: 2000, level: 'debug' as const, message: 'Processing data transformations...' },
-      { delay: 1500, level: 'info' as const, message: 'Generating output results...' },
-      { delay: 600, level: 'info' as const, message: 'Execution successful!' }
-    ];
-
-    for (const step of steps) {
-      if (!executionStatus.isRunning) break;
-      await new Promise(resolve => setTimeout(resolve, step.delay));
-      addLog(step.level, step.message);
-    }
+  const startLogPolling = (executionId: string) => {
+    let pollCount = 0;
+    const maxPolls = 100; // Stop after 100 polls (about 3 minutes)
+    
+    const pollLogs = async () => {
+      if (pollCount >= maxPolls) {
+        addLog('warning', 'Log polling stopped - maximum polling time reached');
+        setExecutionStatus(prev => ({ ...prev, isRunning: false }));
+        return;
+      }
+      
+      try {
+        const logsData = await nodeService.getExecutionLogs(executionId);
+        
+        // Parse the log string and convert to LogEntry format
+        if (logsData.log) {
+          const logLines = logsData.log.split('\n').filter(line => line.trim());
+          const newLogs: LogEntry[] = logLines.map((line, index) => ({
+            id: `${executionId}-${index}`,
+            timestamp: new Date().toISOString(),
+            level: line.includes('ERROR') ? 'error' : 
+                   line.includes('WARNING') ? 'warning' :
+                   line.includes('DEBUG') ? 'debug' : 'info',
+            message: line.replace(/^\[[^\]]+\]\s*/, '') // Remove timestamp prefix if exists
+          }));
+          
+          setLogs(newLogs);
+          
+          // Check if execution is complete
+          if (logsData.log.includes('completed') || logsData.log.includes('finished')) {
+            setExecutionStatus(prev => ({ 
+              ...prev, 
+              isRunning: false,
+              duration: prev.startTime ? Date.now() - new Date(prev.startTime).getTime() : 0
+            }));
+            addLog('info', 'Execution completed');
+            return;
+          }
+        }
+        
+        // Continue polling if still running
+        if (executionStatus.isRunning) {
+          pollCount++;
+          setTimeout(pollLogs, 2000); // Poll every 2 seconds
+        }
+      } catch (error) {
+        console.error('Error fetching logs:', error);
+        if (executionStatus.isRunning && pollCount < maxPolls) {
+          pollCount++;
+          setTimeout(pollLogs, 2000); // Continue polling even on error
+        }
+      }
+    };
+    
+    pollLogs();
   };
 
-  const handleStopExecution = () => {
-    setExecutionStatus(prev => ({ ...prev, isRunning: false }));
-    addLog('warning', 'Execution stopped by user');
+  const handleStopExecution = async () => {
+    if (!executionStatus.executionId) return;
+    
+    try {
+      await nodeService.stopNodeExecution(executionStatus.executionId);
+      setExecutionStatus(prev => ({ 
+        ...prev, 
+        isRunning: false,
+        duration: prev.startTime ? Date.now() - new Date(prev.startTime).getTime() : 0
+      }));
+      addLog('warning', 'Execution stopped by user');
+    } catch (error: any) {
+      addLog('error', `Failed to stop execution: ${error.message}`);
+    }
   };
 
   const clearLogs = () => {
@@ -163,7 +231,7 @@ export function TestNodePage() {
     );
   }
 
-  if (error || !node) {
+  if (error || !nodeVersion) {
     return (
       <div className="container mx-auto p-6">
         <div className="flex items-center gap-4 mb-6">
@@ -175,7 +243,7 @@ export function TestNodePage() {
         <Card>
           <CardContent className="p-6">
             <p className="text-destructive">
-              {error || 'Node not found'}
+              {error || 'Node version not found'}
             </p>
           </CardContent>
         </Card>
@@ -206,24 +274,34 @@ export function TestNodePage() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Name</label>
-              <p className="text-base">{node.name}</p>
+              <label className="text-sm font-medium text-muted-foreground">Family Name</label>
+              <p className="text-base">{nodeVersion.family_name}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Version</label>
-              <p className="text-base">{node.version}</p>
+              <p className="text-base">{nodeVersion.version}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">State</label>
+              <Badge variant={nodeVersion.state === 'published' ? 'default' : 'secondary'}>
+                {nodeVersion.state}
+              </Badge>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Created At</label>
+              <p className="text-base">{new Date(nodeVersion.created_at).toLocaleDateString()}</p>
             </div>
             <div className="col-span-2">
-              <label className="text-sm font-medium text-muted-foreground">Description</label>
-              <p className="text-base">{node.description || 'No description available'}</p>
+              <label className="text-sm font-medium text-muted-foreground">Changelog</label>
+              <p className="text-base">{nodeVersion.changelog || 'No changelog available'}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Parameters</label>
-              <p className="text-base">{node.parameters?.length || 0} parameters</p>
+              <p className="text-base">{nodeVersion.parameters?.length || 0} parameters</p>
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Subnodes</label>
-              <p className="text-base">{node.subnodes?.length || 0} subnodes</p>
+              <p className="text-base">{nodeVersion.subnodes?.length || 0} subnodes</p>
             </div>
           </div>
         </CardContent>
@@ -246,10 +324,10 @@ export function TestNodePage() {
                   <SelectValue placeholder="Choose a subnode to execute" />
                 </SelectTrigger>
                 <SelectContent>
-                  {node.subnodes?.length ? (
-                    node.subnodes.map((subnode: any) => (
-                      <SelectItem key={subnode.id} value={subnode.id}>
-                        {subnode.name} (v{subnode.version})
+                  {nodeVersion.subnodes?.length ? (
+                    nodeVersion.subnodes.map((subnode) => (
+                      <SelectItem key={subnode.version.id} value={subnode.version.id}>
+                        {subnode.family.name} (v{subnode.version.version})
                       </SelectItem>
                     ))
                   ) : (

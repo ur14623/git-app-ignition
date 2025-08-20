@@ -32,7 +32,7 @@ export function NodeDetailPage() {
   const [currentActiveNode, setCurrentActiveNode] = useState<Node | null>(null);
 
   // Parameters management
-  const [nodeParameters, setNodeParameters] = useState<Parameter[]>([]);
+  const [nodeParameters, setNodeParameters] = useState<any[]>([]);
   
   // Script content management
   const [scriptContent, setScriptContent] = useState<string>("");
@@ -47,21 +47,8 @@ export function NodeDetailPage() {
         const nodeData = await nodeService.getNode(id);
         setNode(nodeData);
         
-        // Map parameters from published version
-        const mappedParameters = (nodeData.published_version?.parameters || []).map((param: any) => ({
-          id: param.parameter_id,
-          key: param.key,
-          default_value: param.value,
-          datatype: param.datatype,
-          node: nodeData.id,
-          required: false, // Default value since not in API
-          last_updated_by: null,
-          last_updated_at: nodeData.updated_at,
-          is_active: true,
-          created_at: nodeData.updated_at || new Date().toISOString(),
-          created_by: null
-        }));
-        setNodeParameters(mappedParameters);
+        // Initialize with empty parameters, will be set when version is selected
+        setNodeParameters([]);
         
         // Fetch initial data
         await fetchNodeVersions();
@@ -100,6 +87,11 @@ export function NodeDetailPage() {
       console.log('🔍 Subnodes in active version:', activeVersion?.subnodes);
       console.log('🔍 Subnodes length:', activeVersion?.subnodes?.length);
       setSelectedVersion(activeVersion);
+      
+      // Set parameters from selected version
+      if (activeVersion?.parameters) {
+        setNodeParameters(activeVersion.parameters);
+      }
     } catch (err: any) {
       console.error('Error fetching node versions:', err);
       toast({
@@ -155,7 +147,7 @@ export function NodeDetailPage() {
   // Event handlers
   const handleEditVersion = () => {
     if (selectedVersion && selectedVersion.state !== 'published') {
-      navigate(`/nodes/${id}/edit?version=${selectedVersion.version}`);
+      navigate(`/nodes/${id}/edit-version?version=${selectedVersion.version}`);
     }
   };
 
@@ -221,6 +213,8 @@ export function NodeDetailPage() {
   const handleSelectVersion = (version: NodeVersionDetail) => {
     setSelectedVersion(version);
     setVersionHistoryOpen(false);
+    // Update parameters for the selected version
+    setNodeParameters(version.parameters || []);
     toast({
       title: "Version Selected",
       description: `Now viewing version ${version.version}`,
@@ -322,7 +316,7 @@ export function NodeDetailPage() {
 
       // Refresh versions and navigate to edit the new version
       await fetchNodeVersions();
-      navigate(`/nodes/${id}/edit?version=${newVersion.version}`);
+      navigate(`/nodes/${id}/edit-version?version=${newVersion.version}`);
     } catch (err: any) {
       console.error('Error cloning version:', err);
       toast({
