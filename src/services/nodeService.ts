@@ -323,26 +323,46 @@ export const nodeService = {
     return response.data;
   },
 
-  // Execute node for testing
-  async executeNode(familyId: string, versionId: string, subnodeId: string): Promise<any> {
-    const response = await axiosInstance.post('node-test/execute-node/', {
+  // Start execution - Updated API
+  async startExecution(familyId: string, version: number, subnodeId?: string, parameters?: any): Promise<any> {
+    const payload: any = {
       family_id: familyId,
-      version_id: versionId,
-      subnode_id: subnodeId
-    });
+      version: version
+    };
+    
+    if (subnodeId) payload.subnode_id = subnodeId;
+    if (parameters) payload.parameters = parameters;
+    
+    const response = await axiosInstance.post('executions/start/', payload);
     return response.data;
   },
 
-  // Stop node execution
+  // Stop execution - Updated API
+  async stopExecution(executionId: string): Promise<any> {
+    const response = await axiosInstance.post(`executions/${executionId}/stop/`);
+    return response.data;
+  },
+
+  // Get execution status - New API
+  async getExecutionStatus(executionId: string): Promise<any> {
+    const response = await axiosInstance.get(`executions/${executionId}/status/`);
+    return response.data;
+  },
+
+  // Legacy methods - keeping for backward compatibility but deprecated
+  async executeNode(familyId: string, versionId: string, subnodeId: string): Promise<any> {
+    console.warn('executeNode is deprecated, use startExecution instead');
+    return this.startExecution(familyId, parseInt(versionId), subnodeId);
+  },
+
   async stopNodeExecution(executionId: string): Promise<any> {
-    const response = await axiosInstance.post(`node-test/${executionId}/stop/`);
-    return response.data;
+    console.warn('stopNodeExecution is deprecated, use stopExecution instead');
+    return this.stopExecution(executionId);
   },
 
-  // Get execution logs
   async getExecutionLogs(executionId: string): Promise<any> {
-    const response = await axiosInstance.get(`node-test/${executionId}/logs/`);
-    return response.data;
+    console.warn('getExecutionLogs is deprecated, use getExecutionStatus instead');
+    return this.getExecutionStatus(executionId);
   },
 
   // Update script file

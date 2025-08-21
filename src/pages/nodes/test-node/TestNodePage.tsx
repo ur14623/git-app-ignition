@@ -21,6 +21,7 @@ interface ExecutionStatus {
   startTime?: string;
   duration?: number;
   executionId?: string;
+  status?: string;
 }
 
 export function TestNodePage() {
@@ -90,23 +91,24 @@ export function TestNodePage() {
       
       addLog('info', `Starting execution of node "${nodeVersion.family_name}" with subnode: ${selectedSubnode.family.name}`);
       
-      // Call the execute API
-      const executionResult = await nodeService.executeNode(
+      // Call the new start execution API
+      const executionResult = await nodeService.startExecution(
         nodeVersion.family,
-        nodeVersion.id,
+        nodeVersion.version,
         selectedSubnodeId
       );
       
       setExecutionStatus(prev => ({ 
         ...prev, 
-        executionId: executionResult.id
+        executionId: executionResult.id,
+        status: executionResult.status
       }));
       
       addLog('info', `Execution started with ID: ${executionResult.id}`);
       addLog('info', `Status: ${executionResult.status}`);
       
-      // Start polling for logs
-      startLogPolling(executionResult.id);
+      // Start polling for status
+      startStatusPolling(executionResult.id);
       
     } catch (error: any) {
       addLog('error', `Execution failed: ${error.message}`);
@@ -118,23 +120,30 @@ export function TestNodePage() {
     }
   };
 
-  const startLogPolling = (executionId: string) => {
+  const startStatusPolling = (executionId: string) => {
     let pollCount = 0;
     const maxPolls = 100; // Stop after 100 polls (about 3 minutes)
     
-    const pollLogs = async () => {
+    const pollStatus = async () => {
       if (pollCount >= maxPolls) {
-        addLog('warning', 'Log polling stopped - maximum polling time reached');
+        addLog('warning', 'Status polling stopped - maximum polling time reached');
         setExecutionStatus(prev => ({ ...prev, isRunning: false }));
         return;
       }
       
       try {
-        const logsData = await nodeService.getExecutionLogs(executionId);
+        const statusData = await nodeService.getExecutionStatus(executionId);
         
-        // Parse the log string and convert to LogEntry format
-        if (logsData.log) {
-          const logLines = logsData.log.split('\n').filter(line => line.trim());
+        // Update execution status
+        setExecutionStatus(prev => ({
+          ...prev,
+          status: statusData.status,
+          isRunning: statusData.status === 'running' || statusData.status === 'queued'
+        }));
+        
+        // Parse logs if available
+        if (statusData.log) {
+          const logLines = statusData.log.split('\n').filter(line => line.trim());
           const newLogs: LogEntry[] = logLines.map((line, index) => ({
             id: `${executionId}-${index}`,
             timestamp: new Date().toISOString(),
@@ -145,44 +154,45 @@ export function TestNodePage() {
           }));
           
           setLogs(newLogs);
-          
-          // Check if execution is complete
-          if (logsData.log.includes('completed') || logsData.log.includes('finished')) {
-            setExecutionStatus(prev => ({ 
-              ...prev, 
-              isRunning: false,
-              duration: prev.startTime ? Date.now() - new Date(prev.startTime).getTime() : 0
-            }));
-            addLog('info', 'Execution completed');
-            return;
-          }
+        }
+        
+        // Check if execution is complete
+        if (statusData.status === 'completed' || statusData.status === 'failed' || statusData.status === 'stopped') {
+          setExecutionStatus(prev => ({ 
+            ...prev, 
+            isRunning: false,
+            duration: prev.startTime ? Date.now() - new Date(prev.startTime).getTime() : 0
+          }));
+          addLog('info', `Execution ${statusData.status}`);
+          return;
         }
         
         // Continue polling if still running
-        if (executionStatus.isRunning) {
+        if (statusData.status === 'running' || statusData.status === 'queued') {
           pollCount++;
-          setTimeout(pollLogs, 2000); // Poll every 2 seconds
+          setTimeout(pollStatus, 2000); // Poll every 2 seconds
         }
       } catch (error) {
-        console.error('Error fetching logs:', error);
+        console.error('Error fetching status:', error);
         if (executionStatus.isRunning && pollCount < maxPolls) {
           pollCount++;
-          setTimeout(pollLogs, 2000); // Continue polling even on error
+          setTimeout(pollStatus, 2000); // Continue polling even on error
         }
       }
     };
     
-    pollLogs();
+    pollStatus();
   };
 
   const handleStopExecution = async () => {
     if (!executionStatus.executionId) return;
     
     try {
-      await nodeService.stopNodeExecution(executionStatus.executionId);
+      await nodeService.stopExecution(executionStatus.executionId);
       setExecutionStatus(prev => ({ 
         ...prev, 
         isRunning: false,
+        status: 'stopped',
         duration: prev.startTime ? Date.now() - new Date(prev.startTime).getTime() : 0
       }));
       addLog('warning', 'Execution stopped by user');
@@ -314,7 +324,7 @@ export function TestNodePage() {
           <CardDescription>Select a subnode and start execution</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-end gap-4">
             <div className="flex-1">
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
                 Select Subnode
@@ -341,14 +351,15 @@ export function TestNodePage() {
             
             <div className="flex gap-2">
               {executionStatus.isRunning ? (
-                <Button onClick={handleStopExecution} variant="destructive">
+                <Button onClick={handleStopExecution} variant="destructive" size="default">
                   <Square className="h-4 w-4 mr-2" />
-                  Stop
+                  Stop Execution
                 </Button>
               ) : (
                 <Button 
                   onClick={handleStartExecution} 
                   disabled={!selectedSubnodeId || selectedSubnodeId === 'no-subnodes'}
+                  size="default"
                 >
                   <Play className="h-4 w-4 mr-2" />
                   Start Execution
@@ -359,10 +370,13 @@ export function TestNodePage() {
 
           {executionStatus.startTime && (
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span>Status: {executionStatus.isRunning ? 'Running' : 'Completed'}</span>
+              <span>Status: {executionStatus.status || (executionStatus.isRunning ? 'Running' : 'Completed')}</span>
               <span>Started: {new Date(executionStatus.startTime).toLocaleTimeString()}</span>
               {executionStatus.duration && (
                 <span>Duration: {(executionStatus.duration / 1000).toFixed(2)}s</span>
+              )}
+              {executionStatus.executionId && (
+                <span>ID: {executionStatus.executionId}</span>
               )}
             </div>
           )}
