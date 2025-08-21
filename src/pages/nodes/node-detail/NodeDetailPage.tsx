@@ -193,22 +193,7 @@ export function NodeDetailPage() {
           description: `Version ${selectedVersion.version} has been undeployed`,
         });
       } else {
-        // Check if another node is currently active
-        const activeNode = await nodeService.getActiveNode();
-        
-        if (activeNode && activeNode.id !== id) {
-          // Show confirmation dialog for deactivating current active node
-          const shouldProceed = window.confirm(
-            `Node "${activeNode.name}" is currently active. ` +
-            `Activating this node will deactivate "${activeNode.name}". Do you want to proceed?`
-          );
-          
-          if (!shouldProceed) {
-            return;
-          }
-        }
-        
-        // Deploy/activate version
+        // Deploy the version (will automatically deactivate other versions of this node)
         await nodeService.deployNodeVersion(id, selectedVersion.version);
         toast({
           title: "Node Activated",
@@ -251,22 +236,7 @@ export function NodeDetailPage() {
     if (!id) return;
     
     try {
-      // Check if another node is currently active
-      const activeNode = await nodeService.getActiveNode();
-      
-      if (activeNode && activeNode.id !== id) {
-        // Show confirmation dialog for deactivating current active node
-        const shouldProceed = window.confirm(
-          `Node "${activeNode.name}" is currently active. ` +
-          `Activating this node will deactivate "${activeNode.name}". Do you want to proceed?`
-        );
-        
-        if (!shouldProceed) {
-          return;
-        }
-      }
-      
-      // Deploy the version using new API
+      // Deploy the version (will automatically deactivate other versions of this node)
       await nodeService.deployNodeVersion(id, version.version);
       
       toast({
@@ -413,20 +383,6 @@ export function NodeDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Current Active Node Warning */}
-      {currentActiveNode && currentActiveNode.id !== node.id && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-            <span className="text-yellow-800 font-medium">
-              Another node is currently active: "{currentActiveNode.name}"
-            </span>
-          </div>
-          <p className="text-yellow-700 text-sm mt-1">
-            Activating this node will automatically deactivate the currently active node.
-          </p>
-        </div>
-      )}
 
       {/* Header Section */}
       <NodeHeader
