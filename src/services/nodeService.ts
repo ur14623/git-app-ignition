@@ -270,6 +270,21 @@ export const nodeService = {
     return response.data;
   },
 
+  // Create node version with changelog
+  async createNodeVersionWithChangelog(id: string, changelog: string): Promise<any> {
+    // Get the latest version number first
+    const versions = await this.getNodeVersions(id);
+    const latestVersion = Math.max(...versions.map(v => v.version));
+    const newVersion = latestVersion + 1;
+    
+    const response = await axiosInstance.post(`node-families/${id}/versions/`, {
+      version: newVersion,
+      changelog: changelog,
+      source_version: null
+    });
+    return response.data;
+  },
+
   // Create node (legacy - keeping for compatibility)
   async createNode(data: Partial<Node>): Promise<Node> {
     const response = await axiosInstance.post('node-families/', data);

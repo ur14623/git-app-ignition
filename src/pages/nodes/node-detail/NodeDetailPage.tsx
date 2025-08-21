@@ -11,6 +11,7 @@ import { NodeSummary } from "./components/NodeSummary";
 import { PropertiesSection } from "./components/PropertiesSection";
 import { SubnodesSection } from "./components/SubnodesSection";
 import { VersionHistoryModal } from "./components/VersionHistoryModal";
+import { CreateVersionModal } from "./components/CreateVersionModal";
 import axios from 'axios';
 
 export function NodeDetailPage() {
@@ -27,6 +28,7 @@ export function NodeDetailPage() {
   const [selectedVersion, setSelectedVersion] = useState<NodeVersionDetail | null>(null);
   const [nodeVersionsLoading, setNodeVersionsLoading] = useState(false);
   const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
+  const [createVersionOpen, setCreateVersionOpen] = useState(false);
   
   // Active node checking
   const [currentActiveNode, setCurrentActiveNode] = useState<Node | null>(null);
@@ -152,7 +154,31 @@ export function NodeDetailPage() {
   };
 
   const handleCreateNewVersion = () => {
-    navigate(`/nodes/${id}/edit?newVersion=true`);
+    setCreateVersionOpen(true);
+  };
+
+  const handleCreateVersionSubmit = async (changelog: string) => {
+    if (!id) return;
+    
+    try {
+      await nodeService.createNodeVersionWithChangelog(id, changelog);
+      setCreateVersionOpen(false);
+      
+      // Refresh versions list
+      await fetchNodeVersions();
+      
+      toast({
+        title: "Version Created",
+        description: "New version created successfully",
+      });
+    } catch (error) {
+      console.error('Failed to create version:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create new version",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleToggleDeployment = async () => {
@@ -491,6 +517,14 @@ export function NodeDetailPage() {
         onSelectVersion={handleSelectVersion}
         onActivateVersion={activateNodeVersion}
         isLoading={nodeVersionsLoading}
+      />
+
+      {/* Create Version Modal */}
+      <CreateVersionModal
+        open={createVersionOpen}
+        onOpenChange={setCreateVersionOpen}
+        onCreateVersion={handleCreateVersionSubmit}
+        isLoading={loading}
       />
 
       {/* Back to Nodes Button */}
