@@ -80,7 +80,6 @@ export function ParameterValuesTable({ selectedVersion }: ParameterValuesTablePr
                     <TableHead>Value</TableHead>
                     <TableHead>Default Value</TableHead>
                     <TableHead>Data Type</TableHead>
-                    <TableHead>Source</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -94,11 +93,6 @@ export function ParameterValuesTable({ selectedVersion }: ParameterValuesTablePr
                         <Badge variant="outline">{param.default_value}</Badge>
                       </TableCell>
                       <TableCell>{param.datatype}</TableCell>
-                      <TableCell>
-                        <Badge variant={param.source === 'version' ? 'default' : 'secondary'}>
-                          {param.source}
-                        </Badge>
-                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

@@ -1,6 +1,6 @@
 // src/FlowsPage.tsx
 import { useEffect, useState } from "react";
-import { Plus, Upload, Download, Trash2, Eye, Grid, List, Copy } from "lucide-react";
+import { Plus, Upload, Download, Trash2, Eye, Grid, List, Copy, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LoadingCard } from "@/components/ui/loading";
@@ -17,6 +17,12 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -247,72 +253,66 @@ const handleDelete = async (flowId: string) => {
           </Table>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredFlows.map((flow) => (
-            <Card key={flow.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-lg">{flow.name}</CardTitle>
-                  <div className="flex items-center space-x-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => navigate(`/flows/${flow.id}`)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleExport(flow)}
-                    >
-                      <Download className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleClone(flow)}
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Flow</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete "{flow.name}"? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDelete(flow.id)}>
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">{flow.description}</p>
-               
-                <div className="flex items-center gap-2">
+            <Card key={flow.id} className="bg-card border-border">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-foreground text-sm flex items-center justify-between">
+                  {flow.name}
                   <Badge variant={getStatusBadgeVariant(getFlowStatus(flow))}>
                     {getStatusDisplay(getFlowStatus(flow))}
                   </Badge>
-                  <Badge variant="outline" className="text-xs">
-                    v{flow.version}
-                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="text-muted-foreground">
+                    <span className="font-medium">Created:</span> {new Date(flow.created_at).toLocaleDateString()}
+                  </div>
+                  <div className="text-muted-foreground">
+                    <span className="font-medium">By:</span> {flow.created_by}
+                  </div>
                 </div>
-                <div className="text-sm text-muted-foreground space-y-1">
-                  <p>Created: {new Date(flow.created_at).toLocaleDateString()}</p>
-                  <p>Created by: {flow.created_by}</p>
+                
+                <div className="space-y-1">
+                  <div className="text-xs text-muted-foreground">
+                    <span className="font-medium">Version:</span> {flow.version}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    <span className="font-medium">Description:</span> {flow.description || "No description"}
+                  </div>
+                </div>
+                
+                <div className="pt-2 border-t border-border flex justify-between items-center">
+                  <div className="text-xs font-medium text-foreground">Actions:</div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="bg-background border border-border shadow-lg z-50">
+                      <DropdownMenuItem onClick={() => navigate(`/flows/${flow.id}`)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        View
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleExport(flow)}>
+                        <Download className="h-4 w-4 mr-2" />
+                        Export
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleClone(flow)}>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Clone
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleDelete(flow.id)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </CardContent>
             </Card>
