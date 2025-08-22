@@ -26,6 +26,10 @@ import { ParameterDetailPage } from "@/pages/parameters/parameter-detail/Paramet
 import { CreateParameterPage } from "@/pages/parameters/create-parameter/CreateParameterPage";
 import { EditParameterPage } from "@/pages/parameters/edit-parameter/EditParameterPage";
 import { EdgesPage } from "@/pages/edges/EdgesPage";
+import { FlowReportPage } from "@/pages/reports/FlowReportPage";
+import { NodeReportPage } from "@/pages/reports/NodeReportPage";
+import { FlowAlertPage } from "@/pages/alerts/FlowAlertPage";
+import { NodeAlertPage } from "@/pages/alerts/NodeAlertPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,6 +68,10 @@ const App = () => (
               <Route path="/parameters/:id" element={<ParameterDetailPage />} />
               <Route path="/parameters/:id/edit" element={<EditParameterPage />} />
               <Route path="/edges" element={<EdgesPage />} />
+              <Route path="/reports/flows" element={<FlowReportPage />} />
+              <Route path="/reports/nodes" element={<NodeReportPage />} />
+              <Route path="/alerts/flows" element={<FlowAlertPage />} />
+              <Route path="/alerts/nodes" element={<NodeAlertPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
