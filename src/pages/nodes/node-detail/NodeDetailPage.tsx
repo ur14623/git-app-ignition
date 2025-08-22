@@ -13,6 +13,7 @@ import { SubnodesSection } from "./components/SubnodesSection";
 import { VersionHistoryModal } from "./components/VersionHistoryModal";
 import { CreateVersionModal } from "./components/CreateVersionModal";
 import axios from 'axios';
+import { LoadingSpinner } from "@/components/ui/loading";
 
 export function NodeDetailPage() {
   const { id } = useParams();
@@ -354,7 +355,7 @@ export function NodeDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
@@ -440,7 +441,10 @@ export function NodeDetailPage() {
             <div className="relative">
               {scriptLoading ? (
                 <div className="flex items-center justify-center h-32 bg-muted rounded-lg">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent"></div>
+                    <span className="text-sm text-muted-foreground">Loading script...</span>
+                  </div>
                 </div>
               ) : scriptError ? (
                 <div className="bg-destructive/10 border border-destructive/20 text-destructive p-4 rounded-lg">

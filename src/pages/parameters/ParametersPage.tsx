@@ -23,6 +23,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useParametersWithMetadata, parameterService } from "@/services/parameterService";
 import { useToast } from "@/hooks/use-toast";
 import { useSection } from "@/contexts/SectionContext";
+import { LoadingCard } from "@/components/ui/loading";
 
 export function ParametersPage() {
   const navigate = useNavigate();
@@ -55,7 +56,7 @@ export function ParametersPage() {
   );
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64">Loading parameters...</div>;
+    return <LoadingCard text="Loading parameters..." />;
   }
 
   if (error) {

@@ -7,6 +7,7 @@ import { SubnodeInfo } from "./components/SubnodeInfo";
 import { ParameterValuesTable } from "./components/ParameterValuesTable";
 import { VersionHistoryModal } from "./components/VersionHistoryModal";
 import { CreateVersionModal } from "./components/CreateVersionModal";
+import { LoadingCard } from "@/components/ui/loading";
 
 export function SubnodeDetailPage() {
   const { id } = useParams();
@@ -48,14 +49,7 @@ export function SubnodeDetailPage() {
   }, [subnode, versionParam]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading subnode...</p>
-        </div>
-      </div>
-    );
+    return <LoadingCard text="Loading subnode..." className="min-h-[400px]" />;
   }
 
   if (error || !subnode) {

@@ -12,6 +12,7 @@ import { Trash2, Search, Upload, Download, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { nodeService, type NodeVersionDetail } from "@/services/nodeService";
 import { parameterService, type Parameter } from "@/services/parameterService";
+import { LoadingSpinner } from "@/components/ui/loading";
 
 export function EditVersionPage() {
   const { id } = useParams();
@@ -191,7 +192,7 @@ export function EditVersionPage() {
           </Button>
         </div>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <LoadingSpinner size="lg" />
         </div>
       </div>
     );

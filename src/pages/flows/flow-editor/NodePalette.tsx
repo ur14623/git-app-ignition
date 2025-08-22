@@ -12,9 +12,9 @@ import {
   Activity,
   FileText,
   Globe,
-  Plus,
-  Loader2
+  Plus
 } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/loading';
 
 interface NodePaletteProps {
   onAddNode: (nodeId: string) => void;
@@ -84,7 +84,7 @@ export function NodePalette({ onAddNode }: NodePaletteProps) {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-32">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <LoadingSpinner size="lg" />
           </div>
         </CardContent>
       </Card>

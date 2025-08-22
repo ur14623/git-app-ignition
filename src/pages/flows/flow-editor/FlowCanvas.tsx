@@ -16,6 +16,7 @@ import '@xyflow/react/dist/style.css';
 
 import { nodeService } from '@/services/nodeService';
 import { toast } from 'sonner';
+import { Loading } from '@/components/ui/loading';
 
 // Import node types
 import { SftpCollectorNode } from './nodes/SftpCollectorNode';
@@ -140,10 +141,7 @@ export function FlowCanvas({ selectedNodeType, onNodeSelect, selectedNode }: Flo
   if (loading) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading nodes from API...</p>
-        </div>
+        <Loading text="Loading nodes from API..." />
       </div>
     );
   }

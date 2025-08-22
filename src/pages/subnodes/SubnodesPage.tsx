@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import { useSubnodes, subnodeService } from "@/services/subnodeService";
 import { toast } from "sonner";
 import { useSection } from "@/contexts/SectionContext";
+import { LoadingCard } from "@/components/ui/loading";
 
 export function SubnodesPage() {
   const { data: subnodesData, loading, error, refetch } = useSubnodes();
@@ -44,14 +45,7 @@ export function SubnodesPage() {
   const subnodes = subnodesData?.results || [];
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading subnodes...</p>
-        </div>
-      </div>
-    );
+    return <LoadingCard text="Loading subnodes..." className="min-h-[400px]" />;
   }
 
   if (error) {

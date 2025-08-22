@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Plus, Upload, Download, Settings, Trash2, Eye, Grid2X2, List, Copy, MoreVertical } from "lucide-react";
+import { LoadingCard } from "@/components/ui/loading";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -180,14 +181,7 @@ export function NodesPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Loading nodes...</p>
-        </div>
-      </div>
-    );
+    return <LoadingCard text="Loading nodes..." />;
   }
 
   if (error) {
