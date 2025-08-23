@@ -36,10 +36,10 @@ import {
   Edit,
   Settings,
   List,
-  Download,
   Upload,
   Rocket,
-  Grid2X2
+  Grid2X2,
+  ArrowLeft
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -885,19 +885,15 @@ export function FlowEditor() {
               Flow Creator - {currentFlow.name}
             </div>
             <div className="flex gap-2">
-              <Button onClick={exportFlowAsJSON} variant="outline">
-                <Download className="h-4 w-4 mr-2" />
-                Export JSON
-              </Button>
               <Button onClick={saveFlow} variant="outline">
-                <Save className="h-4 w-4 mr-2" />
                 Save Flow
               </Button>
               <Button 
                 onClick={() => navigate('/flows')} 
                 variant="outline"
+                size="icon"
               >
-                Back to Flows
+                <ArrowLeft className="h-4 w-4" />
               </Button>
             </div>
           </CardTitle>
