@@ -10,7 +10,6 @@ import { FlowCanvas } from "./FlowCanvas"; // Import FlowCanvas
 import { Play, Square, History, ChevronDown, CheckCircle, Clock, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { flowService, FlowVersion } from "@/services/flowService";
-import axios from "axios";
 
 export function FlowDetailPage() {
   const { id } = useParams();
@@ -26,8 +25,8 @@ export function FlowDetailPage() {
   useEffect(() => {
     const fetchFlowStructure = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/flows/${id}/structure/`);
-        setFlow(response.data);
+        const response = await flowService.getFlowGraph(id!);
+        setFlow(response);
       } catch (err) {
         setError("Error fetching flow structure");
         console.error(err);
@@ -36,7 +35,9 @@ export function FlowDetailPage() {
       }
     };
 
-    fetchFlowStructure();
+    if (id) {
+      fetchFlowStructure();
+    }
   }, [id]);
 
   // Fetch versions when requested
@@ -81,8 +82,8 @@ export function FlowDetailPage() {
       );
       
       // Refresh flow data
-      const response = await axios.get(`http://127.0.0.1:8000/api/flows/${id}/structure/`);
-      setFlow(response.data);
+      const response = await flowService.getFlowGraph(id);
+      setFlow(response);
       
       toast({
         title: "Version Activated",
@@ -155,55 +156,46 @@ export function FlowDetailPage() {
 
   // Create unique nodes map to avoid duplicates
   const uniqueNodes = new Map();
-  flow.flow_nodes.forEach((flowNode) => {
-    if (!uniqueNodes.has(flowNode.node.id)) {
-      uniqueNodes.set(flowNode.node.id, flowNode);
+  flow.nodes?.forEach((node) => {
+    if (!uniqueNodes.has(node.id)) {
+      uniqueNodes.set(node.id, node);
     }
   });
 
-  // Prepare nodes from the unique nodes with proper positioning
-  const nodes = Array.from(uniqueNodes.values()).map((flowNode, index) => {
-    const nodeType = getNodeType(flowNode.node.name);
+  // Prepare nodes from the unique nodes with proper positioning  
+  const nodes = Array.from(uniqueNodes.values()).map((node, index) => {
+    const nodeType = getNodeType(node.name);
     
     return {
-      id: flowNode.node.id,
+      id: node.id,
       type: nodeType,
       position: { 
         x: (index % 4) * 300 + 100, // Arrange in a grid pattern
         y: Math.floor(index / 4) * 200 + 100 
       },
       data: {
-        label: flowNode.node.name,
-        description: `Version: ${flowNode.node.version}`,
-        node: flowNode.node,
-        selected_subnode: flowNode.selected_subnode,
-        parameters: flowNode.selected_subnode?.parameter_values || [],
-        subnodes: flowNode.node.subnodes || [],
+        label: node.name,
+        description: `Order: ${node.order}`,
+        node: node,
+        selected_subnode: node.selected_subnode_id ? { id: node.selected_subnode_id } : undefined,
+        parameters: [],
+        subnodes: [],
       },
     };
   });
 
-  // Prepare edges from all outgoing edges, removing duplicates
-  const uniqueEdges = new Map();
-  flow.flow_nodes.forEach((flowNode) => {
-    flowNode.outgoing_edges?.forEach((edge) => {
-      if (!uniqueEdges.has(edge.id)) {
-        uniqueEdges.set(edge.id, {
-          id: edge.id,
-          source: edge.from_node,
-          target: edge.to_node,
-          animated: true,
-          label: edge.condition || undefined,
-        });
-      }
-    });
-  });
-  
-  const edges = Array.from(uniqueEdges.values());
+  // Prepare edges from flow edges
+  const edges = flow.edges?.map((edge) => ({
+    id: edge.id,
+    source: edge.from_node,
+    target: edge.to_node,
+    animated: true,
+    label: edge.condition || undefined,
+  })) || [];
 
   const handleRunFlow = async () => {
     try {
-      await axios.post(`http://127.0.0.1:8000/api/flows/${id}/start/`);
+      await flowService.runFlow(id!);
       setFlow(prev => ({ ...prev, is_running: true }));
       toast({
         title: "Flow Started",
@@ -222,7 +214,7 @@ export function FlowDetailPage() {
 
   const handleStopFlow = async () => {
     try {
-      await axios.post(`http://127.0.0.1:8000/api/flows/${id}/stop/`);
+      await flowService.stopFlow(id!);
       setFlow(prev => ({ ...prev, is_running: false }));
       toast({
         title: "Flow Stopped",
