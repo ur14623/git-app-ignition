@@ -109,13 +109,16 @@ const mockDeployedNodes: DeployedNode[] = [
 export const flowService = {
   // Create flownode - add node to flow
   async createFlowNode(data: { 
-    order?: number | null; 
-    node_id: string; 
-    flow_id: string; 
-    from_node?: string | null; 
+    flow_id: string;
+    node_family_id: string;
+    from_node_id?: string | null; 
   }): Promise<FlowNode> {
     try {
-      const response = await axiosInstance.post('flownodes/', data);
+      const response = await axiosInstance.post('flow-nodes/', {
+        flow_id: data.flow_id,
+        node_family_id: data.node_family_id,
+        from_node_id: data.from_node_id || null
+      });
       return response.data;
     } catch (error) {
       // Fallback to mock implementation if API endpoint doesn't exist yet
@@ -125,10 +128,10 @@ export const flowService = {
       // Return a mock FlowNode for development
       const mockFlowNode: FlowNode = {
         id: `flownode-${Date.now()}`,
-        order: data.order || 1,
+        order: 1,
         node: {
-          id: data.node_id,
-          name: `Node ${data.node_id}`,
+          id: data.node_family_id,
+          name: `Node ${data.node_family_id}`,
           subnodes: []
         },
         selected_subnode: undefined,
@@ -245,9 +248,9 @@ export const flowService = {
     return response.data;
   },
 
-  // Start flow
-  async startFlow(id: string): Promise<{ status: string }> {
-    const response = await axiosInstance.post(`flows/${id}/start/`);
+  // Run flow
+  async runFlow(id: string): Promise<{ execution_id: string; status: string }> {
+    const response = await axiosInstance.post(`flows/${id}/run/`);
     return response.data;
   },
 
@@ -258,7 +261,7 @@ export const flowService = {
   },
 
   // Deploy flow
-  async deployFlow(id: string): Promise<{ status: string }> {
+  async deployFlow(id: string): Promise<{ detail: string }> {
     const response = await axiosInstance.post(`flows/${id}/deploy/`);
     return response.data;
   },
@@ -269,11 +272,11 @@ export const flowService = {
     return response.data;
   },
 
-  // Update flownode connection (from_node field)
+  // Update flownode connection (from_node_id field)
   async updateFlowNodeConnection(flowNodeId: string, fromNodeId: string | null): Promise<FlowNode> {
     try {
-      const response = await axiosInstance.patch(`flownodes/${flowNodeId}/`, {
-        from_node: fromNodeId
+      const response = await axiosInstance.patch(`flow-nodes/${flowNodeId}/`, {
+        from_node_id: fromNodeId
       });
       return response.data;
     } catch (error) {
@@ -299,42 +302,30 @@ export const flowService = {
   },
 
   // Update flownode selected subnode
-  async updateFlowNodeSubnode(flowNodeId: string, subnodeId: string): Promise<FlowNode> {
+  async updateFlowNodeSubnode(flowNodeId: string, subnodeId: string): Promise<{ detail: string }> {
     try {
-      const response = await axiosInstance.patch(`flownodes/${flowNodeId}/`, {
-        selected_subnode: subnodeId
+      const response = await axiosInstance.post(`flow-nodes/${flowNodeId}/set_subnode/`, {
+        subnode_id: subnodeId
       });
       return response.data;
     } catch (error) {
       console.warn('FlowNode subnode API endpoint not available, using mock implementation');
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      // Return mock updated FlowNode
-      const mockFlowNode: FlowNode = {
-        id: flowNodeId,
-        order: 1,
-        node: {
-          id: 'mock-node',
-          name: 'Mock Node',
-          subnodes: []
-        },
-        selected_subnode: {
-          id: subnodeId,
-          name: 'Mock Subnode',
-          parameter_values: []
-        },
-        outgoing_edges: []
+      // Return mock response for subnode selection
+      const mockResponse = {
+        detail: `Subnode ${subnodeId} selected for node ${flowNodeId}`
       };
       
-      console.log('Mock FlowNode subnode updated:', mockFlowNode);
-      return mockFlowNode;
+      console.log('Mock FlowNode subnode updated:', mockResponse);
+      return mockResponse;
     }
   },
 
   // Delete flownode
   async deleteFlowNode(flowNodeId: string): Promise<void> {
     try {
-      await axiosInstance.delete(`flownodes/${flowNodeId}/`);
+      await axiosInstance.delete(`flow-nodes/${flowNodeId}/`);
     } catch (error) {
       console.warn('FlowNode deletion API endpoint not available, using mock implementation');
       await new Promise(resolve => setTimeout(resolve, 300));
@@ -403,6 +394,43 @@ export const flowService = {
         }
       ];
       return mockVersions;
+    }
+  },
+
+  // Get flow graph (full structure with nodes and edges)
+  async getFlowGraph(id: string): Promise<{
+    id: string;
+    name: string;
+    version: number;
+    nodes: Array<{
+      flow_node_id: string;
+      id: string;
+      name: string;
+      order: number;
+      selected_subnode_id?: string;
+      outgoing_edges: Array<{id: string; from_node: string; to_node: string; condition: string}>;
+      incoming_edges: Array<{id: string; from_node: string; to_node: string; condition: string}>;
+    }>;
+    edges: Array<{
+      id: string;
+      flow: string;
+      from_node: string;
+      to_node: string;
+      condition: string;
+    }>;
+  }> {
+    try {
+      const response = await axiosInstance.get(`flows/${id}/graph/`);
+      return response.data;
+    } catch (error) {
+      console.warn('Flow graph API endpoint not available, using mock implementation');
+      return {
+        id: id,
+        name: `Flow ${id}`,
+        version: 1,
+        nodes: [],
+        edges: []
+      };
     }
   },
 

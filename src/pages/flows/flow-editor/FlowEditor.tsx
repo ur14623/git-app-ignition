@@ -259,10 +259,9 @@ export function FlowEditor() {
       // Add to flow via API using the new flownode endpoint
       if (flowId) {
         const flowNode = await flowService.createFlowNode({
-          order: nodes.length + 1,
-          node_id: nodeId,
+          node_family_id: nodeId,
           flow_id: flowId,
-          from_node: null
+          from_node_id: null
         });
         
         // Map canvas node to flownode for future API calls
