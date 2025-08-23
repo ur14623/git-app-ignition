@@ -50,16 +50,16 @@ export function SubnodesSection({ subnodes }: SubnodesSectionProps) {
             </TableHeader>
             <TableBody>
               {subnodes.map((subnode, index) => (
-                <TableRow key={subnode.link_id || index} className="cursor-pointer hover:bg-muted/50">
-                  <TableCell className="font-medium">{subnode.family?.name || 'Unknown'}</TableCell>
+                <TableRow key={subnode.id} className="cursor-pointer hover:bg-muted/50">
+                  <TableCell className="font-medium">{subnode.name}</TableCell>
                   <TableCell>
                     <Badge variant="outline">
-                      {subnode.version?.version ? `v${subnode.version.version}` : 'No Active Version'}
+                      {subnode.active_version ? `v${subnode.active_version}` : 'No Active Version'}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={subnode.version?.state === 'published' ? "default" : "secondary"}>
-                      {subnode.version?.state === 'published' ? "Published" : "Draft"}
+                    <Badge variant={subnode.active_version ? "default" : "secondary"}>
+                      {subnode.active_version ? "Active" : "Draft"}
                     </Badge>
                   </TableCell>
                   <TableCell>Unknown</TableCell>
@@ -68,7 +68,7 @@ export function SubnodesSection({ subnodes }: SubnodesSectionProps) {
                     <Button 
                       size="sm" 
                       variant="outline"
-                      onClick={() => navigate(`/subnodes/${subnode.family?.id}`)}
+                      onClick={() => navigate(`/subnodes/${subnode.id}`)}
                     >
                       <Eye className="h-4 w-4 mr-1" />
                       View

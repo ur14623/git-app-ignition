@@ -82,14 +82,14 @@ export function TestNodePage() {
       return;
     }
 
-    const selectedSubnode = nodeVersion.subnodes.find(s => s.version.id === selectedSubnodeId);
+    const selectedSubnode = nodeVersion.subnodes.find(s => s.id === selectedSubnodeId);
     if (!selectedSubnode) return;
 
     try {
       setExecutionStatus({ isRunning: true, startTime: new Date().toISOString() });
       setLogs([]);
       
-      addLog('info', `Starting execution of node "${nodeVersion.family_name}" with subnode: ${selectedSubnode.family.name}`);
+      addLog('info', `Starting execution of node "${nodeVersion.family_name}" with subnode: ${selectedSubnode.name}`);
       
       // Call the new start execution API
       const executionResult = await nodeService.startExecution(
@@ -336,8 +336,8 @@ export function TestNodePage() {
                 <SelectContent>
                   {nodeVersion.subnodes?.length ? (
                     nodeVersion.subnodes.map((subnode) => (
-                      <SelectItem key={subnode.version.id} value={subnode.version.id}>
-                        {subnode.family.name} (v{subnode.version.version})
+                      <SelectItem key={subnode.id} value={subnode.id}>
+                        {subnode.name} (Active Version: {subnode.active_version})
                       </SelectItem>
                     ))
                   ) : (

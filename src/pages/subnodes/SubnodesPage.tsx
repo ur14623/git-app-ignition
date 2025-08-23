@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Plus, Upload, Download, Settings, Trash2, Eye, Grid2X2, List, Copy, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import {
   Table,
   TableBody,
@@ -28,6 +30,8 @@ export function SubnodesPage() {
   const { data: subnodesData, loading, error, refetch } = useSubnodes();
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const navigate = useNavigate();
   const { setStatusCounts } = useSection();
 
@@ -63,6 +67,10 @@ export function SubnodesPage() {
     subnode.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (subnode.node_family_name && subnode.node_family_name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  const totalPages = Math.ceil(filteredSubnodes.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedSubnodes = filteredSubnodes.slice(startIndex, startIndex + pageSize);
 
   const getDeploymentBadge = (activeVersion: number | null) => {
     return activeVersion 
@@ -110,10 +118,30 @@ export function SubnodesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
+          <Select
+            value={pageSize.toString()}
+            onValueChange={(value) => {
+              setPageSize(Number(value));
+              setCurrentPage(1);
+            }}
+          >
+            <SelectTrigger className="w-[100px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="5">5</SelectItem>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="15">15</SelectItem>
+              <SelectItem value="20">20</SelectItem>
+            </SelectContent>
+          </Select>
           <Input
             placeholder="Search subnodes..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             className="max-w-sm"
           />
         </div>
@@ -167,7 +195,7 @@ export function SubnodesPage() {
 
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredSubnodes.map((subnode) => (
+          {paginatedSubnodes.map((subnode) => (
             <Card key={subnode.id} className="bg-card border-border">
               <CardHeader className="pb-2">
                 <CardTitle className="text-foreground text-sm flex items-center justify-between">
@@ -251,7 +279,7 @@ export function SubnodesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredSubnodes.map((subnode) => (
+              {paginatedSubnodes.map((subnode) => (
                 <TableRow key={subnode.id}>
                   <TableCell className="font-medium">{subnode.name}</TableCell>
                   <TableCell>
@@ -304,6 +332,52 @@ export function SubnodesPage() {
               ))}
             </TableBody>
           </Table>
+        </div>
+      )}
+
+      {filteredSubnodes.length > 0 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
+            Showing {startIndex + 1} to {Math.min(startIndex + pageSize, filteredSubnodes.length)} of {filteredSubnodes.length} subnodes
+          </div>
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious 
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentPage > 1) setCurrentPage(currentPage - 1);
+                  }}
+                  className={currentPage <= 1 ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage(page);
+                    }}
+                    isActive={currentPage === page}
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                  }}
+                  className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </div>
       )}
     </div>

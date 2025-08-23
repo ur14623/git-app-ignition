@@ -69,23 +69,10 @@ export interface NodeVersionDetail {
     datatype: string;
   }>;
   subnodes: Array<{
-    link_id: string;
-    order: number;
-    family: {
-      id: string;
-      name: string;
-      is_deployed: boolean;
-    };
-    version: {
-      id: string;
-      version: number;
-      state: string;
-      parameters: Array<{
-        key: string;
-        value: string;
-        datatype: string;
-      }>;
-    };
+    id: string;
+    name: string;
+    active_version: number;
+    parameter_values: Record<string, string>;
   }>;
   created_at: string;
   created_by: string;
@@ -124,23 +111,10 @@ export interface Node {
       datatype: string;
     }>;
     subnodes: Array<{
-      link_id: string;
-      order: number;
-      family: {
-        id: string;
-        name: string;
-        is_deployed: boolean;
-      };
-      version: {
-        id: string;
-        version: number;
-        state: string;
-        parameters: Array<{
-          key: string;
-          value: string;
-          datatype: string;
-        }>;
-      };
+      id: string;
+      name: string;
+      active_version: number;
+      parameter_values: Record<string, string>;
     }>;
     created_at: string;
     created_by: string;

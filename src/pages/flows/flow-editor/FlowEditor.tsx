@@ -54,6 +54,7 @@ import { NodeConfigDialog } from '@/components/NodeConfigDialog';
 import { NodePalette } from './NodePalette';
 import { useFlow, flowService } from '@/services/flowService';
 import { nodeService } from '@/services/nodeService';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 
 interface NodeData extends Record<string, unknown> {
   label: string;
@@ -902,34 +903,47 @@ export function FlowEditor() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-            <div className="lg:col-span-1">
-              <NodePalette onAddNode={addNodeToCanvas} />
-            </div>
-
-            <div className="lg:col-span-3">
-              <div className="h-96 bg-muted rounded-lg border border-border">
-                <ReactFlow
-                  nodes={nodes}
-                  edges={edges}
-                  onNodesChange={onNodesChange}
-                  onEdgesChange={onEdgesChange}
-                  onConnect={onConnect}
-                  onDragOver={onDragOver}
-                  onDrop={onDrop}
-                  nodeTypes={nodeTypes}
-                  fitView
-                  className="bg-muted"
-                  connectionMode={'loose' as ConnectionMode}
-                  snapToGrid={true}
-                  snapGrid={[15, 15]}
-                >
-                  <Controls className="bg-background border-border text-foreground" />
-                  <MiniMap className="bg-background border-border" />
-                  <Background color="hsl(var(--border))" />
-                </ReactFlow>
-              </div>
-            </div>
+          <div className="h-[600px] w-full">
+            <ResizablePanelGroup direction="horizontal" className="h-full">
+              <ResizablePanel 
+                defaultSize={25} 
+                minSize={20} 
+                maxSize={40}
+                className="min-w-[280px]"
+              >
+                <NodePalette onAddNode={addNodeToCanvas} />
+              </ResizablePanel>
+              
+              <ResizableHandle withHandle />
+              
+              <ResizablePanel 
+                defaultSize={75} 
+                minSize={60}
+                className="min-w-[400px]"
+              >
+                <div className="h-full bg-muted rounded-lg border border-border">
+                  <ReactFlow
+                    nodes={nodes}
+                    edges={edges}
+                    onNodesChange={onNodesChange}
+                    onEdgesChange={onEdgesChange}
+                    onConnect={onConnect}
+                    onDragOver={onDragOver}
+                    onDrop={onDrop}
+                    nodeTypes={nodeTypes}
+                    fitView
+                    className="bg-muted h-full w-full"
+                    connectionMode={'loose' as ConnectionMode}
+                    snapToGrid={true}
+                    snapGrid={[15, 15]}
+                  >
+                    <Controls className="bg-background border-border text-foreground" />
+                    <MiniMap className="bg-background border-border" />
+                    <Background color="hsl(var(--border))" />
+                  </ReactFlow>
+                </div>
+              </ResizablePanel>
+            </ResizablePanelGroup>
           </div>
 
           <div className="mt-4 p-4 bg-muted rounded-lg">

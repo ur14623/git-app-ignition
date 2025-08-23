@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { LoadingCard } from "@/components/ui/loading";
 import { useItems } from '../apis/ItemService'; // Using real API data
 import { deleteItem } from '../apis/ItemService'; // Using real delete function
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 import {
   Table,
@@ -46,6 +48,8 @@ export function FlowsPage() {
   const [showCloneDialog, setShowCloneDialog] = useState(false);
   const [flowToClone, setFlowToClone] = useState<any>(null);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,6 +61,10 @@ export function FlowsPage() {
   const filteredFlows = flows.filter(flow =>
     flow.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const totalPages = Math.ceil(filteredFlows.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedFlows = filteredFlows.slice(startIndex, startIndex + pageSize);
 
   const getFlowStatus = (flow: any) => {
     if (flow.is_running) return "running";
@@ -137,10 +145,30 @@ const handleDelete = async (flowId: string) => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
+          <Select
+            value={pageSize.toString()}
+            onValueChange={(value) => {
+              setPageSize(Number(value));
+              setCurrentPage(1);
+            }}
+          >
+            <SelectTrigger className="w-[100px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="5">5</SelectItem>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="15">15</SelectItem>
+              <SelectItem value="20">20</SelectItem>
+            </SelectContent>
+          </Select>
           <Input
             placeholder="Search flows..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             className="max-w-sm"
           />
         </div>
@@ -188,7 +216,7 @@ const handleDelete = async (flowId: string) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredFlows.map((flow) => (
+              {paginatedFlows.map((flow) => (
                 <TableRow key={flow.id}>
                   <TableCell className="font-medium">{flow.name}</TableCell>
                   <TableCell>
@@ -254,7 +282,7 @@ const handleDelete = async (flowId: string) => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredFlows.map((flow) => (
+          {paginatedFlows.map((flow) => (
             <Card key={flow.id} className="bg-card border-border">
               <CardHeader className="pb-2">
                 <CardTitle className="text-foreground text-sm flex items-center justify-between">
@@ -320,7 +348,53 @@ const handleDelete = async (flowId: string) => {
         </div>
       )}
 
-      <CreateFlowDialog 
+      {filteredFlows.length > 0 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
+            Showing {startIndex + 1} to {Math.min(startIndex + pageSize, filteredFlows.length)} of {filteredFlows.length} flows
+          </div>
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious 
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentPage > 1) setCurrentPage(currentPage - 1);
+                  }}
+                  className={currentPage <= 1 ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage(page);
+                    }}
+                    isActive={currentPage === page}
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                  }}
+                  className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
+
+      <CreateFlowDialog
         open={showCreateDialog} 
         onOpenChange={setShowCreateDialog}
       />

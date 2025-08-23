@@ -107,31 +107,31 @@ export function SubnodeHeader({
           {/* Version History */}
           <Button 
             variant="outline" 
+            size="sm"
             onClick={onShowVersionHistory}
             disabled={isLoading}
           >
-            <History className="h-4 w-4 mr-2" />
-            Version History
+            <History className="h-4 w-4" />
           </Button>
           
           {/* Deploy/Undeploy Button */}
           {isActiveVersion ? (
             <Button 
               variant="destructive"
+              size="sm"
               onClick={onUndeployVersion}
               disabled={isLoading}
             >
-              <Square className="h-4 w-4 mr-2" />
-              Stop
+              <Square className="h-4 w-4" />
             </Button>
           ) : canEdit ? (
             <Button 
               variant="default"
+              size="sm"
               onClick={onDeployVersion}
               disabled={isLoading}
             >
-              <Play className="h-4 w-4 mr-2" />
-              Start
+              <Play className="h-4 w-4" />
             </Button>
           ) : null}
           
@@ -139,20 +139,20 @@ export function SubnodeHeader({
           {isActiveVersion ? (
             <Button 
               variant="outline"
+              size="sm"
               onClick={onCreateNewVersion}
               disabled={isLoading}
             >
-              <Edit className="h-4 w-4 mr-2" />
-              Version Create
+              <Edit className="h-4 w-4" />
             </Button>
           ) : canEdit ? (
             <Button 
               variant="outline"
+              size="sm"
               onClick={onEditVersion}
               disabled={isLoading}
             >
-              <Edit className="h-4 w-4 mr-2" />
-              Version Edit
+              <Edit className="h-4 w-4" />
             </Button>
           ) : null}
           
