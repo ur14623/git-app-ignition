@@ -428,8 +428,35 @@ export const flowService = {
         id: id,
         name: `Flow ${id}`,
         version: 1,
-        nodes: [],
-        edges: []
+        nodes: [
+          {
+            flow_node_id: 'flownode-1',
+            id: 'node-1',
+            name: 'Email Verification Node',
+            order: 1,
+            selected_subnode_id: 'subnode-1',
+            outgoing_edges: [{ id: 'edge-1', from_node: 'flownode-1', to_node: 'flownode-2', condition: '' }],
+            incoming_edges: []
+          },
+          {
+            flow_node_id: 'flownode-2',
+            id: 'node-2',
+            name: 'SMS Notification Node',
+            order: 2,
+            selected_subnode_id: 'subnode-2',
+            outgoing_edges: [],
+            incoming_edges: [{ id: 'edge-1', from_node: 'flownode-1', to_node: 'flownode-2', condition: '' }]
+          }
+        ],
+        edges: [
+          {
+            id: 'edge-1',
+            flow: id,
+            from_node: 'flownode-1',
+            to_node: 'flownode-2',
+            condition: ''
+          }
+        ]
       };
     }
   },
