@@ -475,6 +475,76 @@ export const flowService = {
       };
     }
   },
+
+  // Create flow edge (connection between nodes)
+  async createFlowEdge(data: { 
+    flow: string;
+    from_node: string;
+    to_node: string;
+    condition?: string;
+  }): Promise<Edge> {
+    try {
+      const response = await axiosInstance.post('flow-edges/', {
+        flow: data.flow,
+        from_node: data.from_node,
+        to_node: data.to_node,
+        condition: data.condition || ''
+      });
+      return response.data;
+    } catch (error) {
+      console.warn('Flow edge creation API endpoint not available, using mock implementation');
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      const mockEdge: Edge = {
+        id: `edge-${Date.now()}`,
+        from_node: data.from_node,
+        to_node: data.to_node,
+        condition: data.condition || ''
+      };
+      
+      console.log('Mock Flow Edge created:', mockEdge);
+      return mockEdge;
+    }
+  },
+
+  // Delete flow edge
+  async deleteFlowEdge(edgeId: string): Promise<void> {
+    try {
+      await axiosInstance.delete(`flow-edges/${edgeId}/`);
+    } catch (error) {
+      console.warn('Flow edge deletion API endpoint not available, using mock implementation');
+      await new Promise(resolve => setTimeout(resolve, 300));
+      console.log('Mock Flow Edge deleted:', edgeId);
+    }
+  },
+
+  // Update flow edges (bulk update all connections)
+  async updateFlowEdgeConnections(data: {
+    flow_id: string;
+    connections: Array<{
+      from_node: string;
+      to_node: string;
+      condition?: string;
+    }>;
+  }): Promise<{ detail: string }> {
+    try {
+      const response = await axiosInstance.post('flow-edges/update-connections/', {
+        flow_id: data.flow_id,
+        connections: data.connections
+      });
+      return response.data;
+    } catch (error) {
+      console.warn('Flow edge bulk update API endpoint not available, using mock implementation');
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      const mockResponse = {
+        detail: `Updated ${data.connections.length} connections for flow ${data.flow_id}`
+      };
+      
+      console.log('Mock Flow Edge connections updated:', mockResponse);
+      return mockResponse;
+    }
+  },
 };
 
 // Custom hook for deployed nodes

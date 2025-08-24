@@ -158,8 +158,17 @@ export function FlowEditor() {
           const targetFlowNodeId = flowNodeMap.get(params.target);
           const sourceFlowNodeId = flowNodeMap.get(params.source);
           
-          if (targetFlowNodeId) {
-            await flowService.updateFlowNodeConnection(targetFlowNodeId, sourceFlowNodeId || null);
+          if (targetFlowNodeId && sourceFlowNodeId) {
+            // 1. Create the edge connection
+            await flowService.createFlowEdge({
+              flow: flowId,
+              from_node: sourceFlowNodeId,
+              to_node: targetFlowNodeId,
+              condition: ''
+            });
+            
+            // 2. Update the target node's from_node_id field
+            await flowService.updateFlowNodeConnection(targetFlowNodeId, sourceFlowNodeId);
             
             toast({
               title: "Connection Created",

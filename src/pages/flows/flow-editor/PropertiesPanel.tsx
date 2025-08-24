@@ -9,12 +9,14 @@ import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Settings, Trash2, Play, Copy, Plus, Square, ExternalLink } from 'lucide-react';
 import { subnodeService } from '@/services/subnodeService';
+import { flowService } from '@/services/flowService';
 import { toast } from 'sonner';
 
 interface PropertiesPanelProps {
   selectedNode: Node | null;
   onUpdateNode: (nodeId: string, data: any) => void;
   onDeleteNode: (nodeId: string) => void;
+  flowId?: string; // Add flowId for API calls
 }
 
 interface Subnode {
@@ -24,7 +26,7 @@ interface Subnode {
   parameters?: any[];
 }
 
-export function PropertiesPanel({ selectedNode, onUpdateNode, onDeleteNode }: PropertiesPanelProps) {
+export function PropertiesPanel({ selectedNode, onUpdateNode, onDeleteNode, flowId }: PropertiesPanelProps) {
   const [availableSubnodes, setAvailableSubnodes] = useState<Subnode[]>([]);
   const [loadingSubnodes, setLoadingSubnodes] = useState(false);
 
@@ -64,14 +66,36 @@ export function PropertiesPanel({ selectedNode, onUpdateNode, onDeleteNode }: Pr
     }
   }, [selectedNode?.data?.nodeId]);
 
-  const handleSubnodeSelection = (subnodeId: string) => {
+  const handleSubnodeSelection = async (subnodeId: string) => {
     if (!selectedNode?.data) return;
+    
     const selectedSubnode = availableSubnodes.find(sub => sub.id === subnodeId);
+    
+    // Optimistically update UI first
     onUpdateNode(selectedNode.id, {
       ...(selectedNode.data as Record<string, any>),
       selectedSubnode: selectedSubnode,
       subnodeId: subnodeId,
     });
+    
+    // Make real-time API call if flowId is provided
+    if (flowId && selectedNode.data?.nodeId) {
+      try {
+        await flowService.updateFlowNodeSubnode(String(selectedNode.data.nodeId), subnodeId);
+        console.log('✅ Subnode selection updated successfully via API');
+        toast.success(`Subnode "${selectedSubnode?.name}" selected successfully`);
+      } catch (error) {
+        console.error('❌ Error updating subnode selection:', error);
+        toast.error('Failed to update subnode selection');
+        
+        // Revert optimistic update on error
+        onUpdateNode(selectedNode.id, {
+          ...(selectedNode.data as Record<string, any>),
+          selectedSubnode: undefined,
+          subnodeId: undefined,
+        });
+      }
+    }
   };
 
   const handleLabelChange = (value: string) => {
