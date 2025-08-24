@@ -149,7 +149,9 @@ export function FlowEditor() {
 
   const onConnect = useCallback(
     async (params: Connection) => {
-      // Add edge to local state first
+      console.log('🔗 Attempting to connect nodes:', params);
+      
+      // Add edge to local state first (optimistic update)
       setEdges((eds) => addEdge(params, eds));
       
       // Update backend connection if we have flow ID and target node
@@ -157,6 +159,13 @@ export function FlowEditor() {
         try {
           const targetFlowNodeId = flowNodeMap.get(params.target);
           const sourceFlowNodeId = flowNodeMap.get(params.source);
+          
+          console.log('🎯 FlowNode mapping:', {
+            source: params.source,
+            target: params.target,
+            sourceFlowNodeId,
+            targetFlowNodeId
+          });
           
           if (targetFlowNodeId && sourceFlowNodeId) {
             // 1. Create the edge connection
@@ -170,13 +179,21 @@ export function FlowEditor() {
             // 2. Update the target node's from_node_id field
             await flowService.updateFlowNodeConnection(targetFlowNodeId, sourceFlowNodeId);
             
+            console.log('✅ Connection created successfully via API');
             toast({
               title: "Connection Created",
               description: "Nodes have been connected successfully.",
             });
+          } else {
+            console.warn('⚠️ Missing FlowNode IDs - connection created locally only');
+            toast({
+              title: "Connection Created (Local Only)",
+              description: "Nodes connected on canvas. API sync may be needed.",
+              variant: "destructive"
+            });
           }
         } catch (error) {
-          console.error('Error updating connection:', error);
+          console.error('❌ Error updating connection:', error);
           // Remove the edge from local state if backend update failed
           setEdges((eds) => eds.filter(edge => 
             !(edge.source === params.source && edge.target === params.target)
@@ -188,6 +205,8 @@ export function FlowEditor() {
             variant: "destructive"
           });
         }
+      } else {
+        console.log('ℹ️ Local connection only - missing flowId or node IDs');
       }
     },
     [setEdges, flowId, flowNodeMap, toast],
@@ -195,7 +214,9 @@ export function FlowEditor() {
 
   // Handle connector (subnode) selection
   const handleConnectorChange = useCallback(async (nodeId: string, connector: string) => {
-    // Update local state first
+    console.log('🔄 Changing connector for node:', nodeId, 'to:', connector);
+    
+    // Update local state first (optimistic update)
     setNodes((nds) =>
       nds.map((node) =>
         node.id === nodeId
@@ -214,30 +235,54 @@ export function FlowEditor() {
     const flowNodeId = flowNodeMap.get(nodeId);
     if (flowNodeId && flowId) {
       try {
-        // Find the subnode ID by name
+        // Find the subnode ID by name from the node's stored subnodes
         const node = nodes.find(n => n.id === nodeId);
-        if (node?.data.nodeId) {
-          const nodeData = await nodeService.getNode(node.data.nodeId);
-          const activeVersion = nodeData.versions.find(v => v.is_deployed === true) || nodeData.versions[0];
-          const selectedSubnode = activeVersion?.subnodes?.find(s => s.name === connector);
+        const subnodes = (node?.data as any)?.subnodes || [];
+        const selectedSubnode = subnodes.find((s: any) => s.name === connector);
+        
+        console.log('🎯 Found subnode for selection:', selectedSubnode);
+        
+        if (selectedSubnode) {
+          await flowService.updateFlowNodeSubnode(flowNodeId, selectedSubnode.id);
           
-          if (selectedSubnode) {
-            await flowService.updateFlowNodeSubnode(flowNodeId, selectedSubnode.id);
-            
-            toast({
-              title: "Subnode Updated",
-              description: `Selected subnode changed to ${connector}.`,
-            });
-          }
+          console.log('✅ Subnode selection updated via API');
+          toast({
+            title: "Subnode Updated",
+            description: `Selected subnode changed to ${connector}.`,
+          });
+        } else {
+          console.warn('⚠️ Subnode not found:', connector);
+          toast({
+            title: "Warning", 
+            description: `Subnode "${connector}" not found.`,
+            variant: "destructive"
+          });
         }
       } catch (error) {
-        console.error('Error updating subnode selection:', error);
+        console.error('❌ Error updating subnode selection:', error);
         toast({
           title: "Update Error",
           description: "Failed to update subnode selection.",
           variant: "destructive"
         });
+        
+        // Revert optimistic update on error
+        setNodes((nds) =>
+          nds.map((node) =>
+            node.id === nodeId
+              ? {
+                  ...node,
+                  data: {
+                    ...node.data,
+                    connector: (node.data as any).originalConnector || 'Default',
+                  },
+                }
+              : node
+          )
+        );
       }
+    } else {
+      console.log('ℹ️ No API update - either no flowNodeId or no flowId');
     }
   }, [setNodes, flowNodeMap, flowId, nodes, toast]);
 
@@ -246,10 +291,18 @@ export function FlowEditor() {
     try {
       // First, get the actual node data from API
       const nodeData = await nodeService.getNode(nodeId);
-      const activeVersion = nodeData.versions.find(v => v.is_deployed === true) || nodeData.versions[0];
+      console.log('✅ Node fetched successfully:', nodeData);
+      
+      // Use published_version data if available, otherwise fall back to versions
+      const activeVersion = nodeData.published_version || nodeData.versions?.find(v => v.is_deployed === true) || nodeData.versions?.[0];
       
       // Create a visual node for the canvas
       const canvasNodeId = `canvas-node-${Date.now()}`;
+      
+      // Get subnodes from the correct location (published_version.subnodes or activeVersion.subnodes)
+      const subnodes = activeVersion?.subnodes || [];
+      console.log('📋 Available subnodes:', subnodes);
+      
       const newNode: Node<NodeData> = {
         id: canvasNodeId,
         type: 'custom',
@@ -259,36 +312,58 @@ export function FlowEditor() {
           icon: Database,
           description: nodeData.description || 'Node from API',
           config: {},
-          connector: activeVersion?.subnodes?.find(s => s.is_selected)?.name || activeVersion?.subnodes?.[0]?.name || 'Default',
-          connectorOptions: activeVersion?.subnodes?.map(s => s.name) || ['Default'],
-          nodeId: nodeId // Add the original node ID for subnode lookup
+          connector: subnodes?.[0]?.name || 'Default',
+          connectorOptions: subnodes?.map(s => s.name) || ['Default'],
+          nodeId: nodeId, // Add the original node ID for subnode lookup
+          subnodes: subnodes // Store subnodes for easy access
         },
       };
 
+      console.log('🎯 Created canvas node:', newNode);
+
       // Add to flow via API using the new flownode endpoint
       if (flowId) {
-        const flowNode = await flowService.createFlowNode({
-          node_family_id: nodeId,
-          flow_id: flowId,
-          from_node_id: null
-        });
-        
-        // Map canvas node to flownode for future API calls
-        setFlowNodeMap(prev => new Map(prev.set(canvasNodeId, flowNode.id)));
-        
-        // Add to local state after successful API call
+        try {
+          const flowNode = await flowService.createFlowNode({
+            node_family_id: nodeId,
+            flow_id: flowId,
+            from_node_id: null
+          });
+          
+          console.log('✅ FlowNode created via API:', flowNode);
+          
+          // Map canvas node to flownode for future API calls
+          setFlowNodeMap(prev => new Map(prev.set(canvasNodeId, flowNode.id)));
+          
+          // Add to local state after successful API call
+          setNodes((prev) => [...prev, newNode]);
+          
+          toast({
+            title: "Node Added",
+            description: `${nodeData.name} has been added to the flow successfully.`,
+          });
+        } catch (apiError) {
+          console.error('❌ API call failed, adding node locally only:', apiError);
+          // Add to canvas even if API fails
+          setNodes((prev) => [...prev, newNode]);
+          
+          toast({
+            title: "Node Added (Local Only)",
+            description: `${nodeData.name} added to canvas. API connection failed.`,
+            variant: "destructive"
+          });
+        }
+      } else {
+        // Just add to canvas if no flow ID (for new flows)
         setNodes((prev) => [...prev, newNode]);
         
         toast({
           title: "Node Added",
-          description: `${nodeData.name} has been added to the flow successfully.`,
+          description: `${nodeData.name} has been added to the canvas.`,
         });
-      } else {
-        // Just add to canvas if no flow ID (for new flows)
-        setNodes((prev) => [...prev, newNode]);
       }
     } catch (error) {
-      console.error('Error adding node to flow:', error);
+      console.error('❌ Error adding node to flow:', error);
       toast({
         title: "Error",
         description: "Failed to add node to flow.",
@@ -925,22 +1000,24 @@ export function FlowEditor() {
                 minSize={60}
                 className="min-w-[400px]"
               >
-                <div className="h-full bg-muted rounded-lg border border-border">
-                  <ReactFlow
-                    nodes={nodes}
-                    edges={edges}
-                    onNodesChange={onNodesChange}
-                    onEdgesChange={onEdgesChange}
-                    onConnect={onConnect}
-                    onDragOver={onDragOver}
-                    onDrop={onDrop}
-                    nodeTypes={nodeTypes}
-                    fitView
-                    className="bg-muted h-full w-full"
-                    connectionMode={'loose' as ConnectionMode}
-                    snapToGrid={true}
-                    snapGrid={[15, 15]}
-                  >
+                 <div className="h-full bg-muted rounded-lg border border-border">
+                   <ReactFlow
+                     nodes={nodes}
+                     edges={edges}
+                     onNodesChange={onNodesChange}
+                     onEdgesChange={onEdgesChange}
+                     onConnect={onConnect}
+                     onDragOver={onDragOver}
+                     onDrop={onDrop}
+                     nodeTypes={nodeTypes}
+                     fitView
+                     className="bg-muted h-full w-full"
+                     connectionMode={'loose' as ConnectionMode}
+                     snapToGrid={true}
+                     snapGrid={[15, 15]}
+                     deleteKeyCode={['Backspace', 'Delete']}
+                     multiSelectionKeyCode={'Shift'}
+                   >
                     <Controls className="bg-background border-border text-foreground" />
                     <MiniMap className="bg-background border-border" />
                     <Background color="hsl(var(--border))" />
