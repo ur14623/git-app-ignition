@@ -52,6 +52,8 @@ import {
 } from '@/components/ui/table';
 import { NodeConfigDialog } from '@/components/NodeConfigDialog';
 import { NodePalette } from './NodePalette';
+import { PropertiesPanel } from './PropertiesPanel';
+import { FlowNode } from './flow-node';
 import { useFlow, flowService } from '@/services/flowService';
 import { nodeService } from '@/services/nodeService';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
@@ -117,6 +119,7 @@ export function FlowEditor() {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<NodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [editingNode, setEditingNode] = useState<string | null>(null);
+  const [selectedNode, setSelectedNode] = useState<Node<NodeData> | null>(null);
   const [flowNodeMap, setFlowNodeMap] = useState<Map<string, string>>(new Map()); // Canvas node ID -> FlowNode ID mapping
 
   // Update flow data when loaded from API
@@ -605,6 +608,33 @@ export function FlowEditor() {
     }
   };
 
+  // Handle node deletion
+  const handleDeleteNode = async (nodeId: string) => {
+    const flowNodeId = flowNodeMap.get(nodeId);
+    if (flowNodeId) {
+      try {
+        await flowService.deleteFlowNode(flowNodeId);
+        setNodes((nds) => nds.filter(node => node.id !== nodeId));
+        setFlowNodeMap(prev => {
+          const newMap = new Map(prev);
+          newMap.delete(nodeId);
+          return newMap;
+        });
+        toast({
+          title: "Node Removed",
+          description: "Node has been removed from the flow.",
+        });
+      } catch (error) {
+        console.error('Error deleting node:', error);
+        toast({
+          title: "Delete Error",
+          description: "Failed to remove node from flow.",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
   // Handle node configuration editing
   const handleNodeEdit = (nodeId: string) => {
     setEditingNode(nodeId);
@@ -984,9 +1014,9 @@ export function FlowEditor() {
           <div className="h-[600px] w-full">
             <ResizablePanelGroup direction="horizontal" className="h-full">
               <ResizablePanel 
-                defaultSize={25} 
-                minSize={20} 
-                maxSize={40}
+                defaultSize={20} 
+                minSize={15} 
+                maxSize={30}
                 className="min-w-[280px]"
               >
                 <NodePalette onAddNode={addNodeToCanvas} />
@@ -995,8 +1025,8 @@ export function FlowEditor() {
               <ResizableHandle withHandle />
               
               <ResizablePanel 
-                defaultSize={75} 
-                minSize={60}
+                defaultSize={55} 
+                minSize={40}
                 className="min-w-[400px]"
               >
                  <div className="h-full bg-muted rounded-lg border border-border">
@@ -1016,12 +1046,91 @@ export function FlowEditor() {
                      snapGrid={[15, 15]}
                      deleteKeyCode={['Backspace', 'Delete']}
                      multiSelectionKeyCode={'Shift'}
+                     onNodeClick={(_, node) => setSelectedNode(node)}
+                     onPaneClick={() => setSelectedNode(null)}
                    >
                     <Controls className="bg-background border-border text-foreground" />
                     <MiniMap className="bg-background border-border" />
                     <Background color="hsl(var(--border))" />
                   </ReactFlow>
                 </div>
+              </ResizablePanel>
+
+              <ResizableHandle withHandle />
+
+              <ResizablePanel 
+                defaultSize={25} 
+                minSize={20} 
+                maxSize={35}
+                className="min-w-[300px]"
+              >
+                <PropertiesPanel
+                  selectedNode={selectedNode}
+                  onUpdateNode={(nodeId, data) => {
+                    // Handle subnode selection from properties panel
+                    if (data.subnodeId && data.selectedSubnode) {
+                      console.log('🔧 Subnode selected from properties panel:', data.selectedSubnode);
+                      
+                      // Update node data optimistically
+                      setNodes((nds) =>
+                        nds.map((node) => {
+                          if (node.id === nodeId) {
+                            return {
+                              ...node,
+                              data: {
+                                ...node.data,
+                                selectedSubnode: data.selectedSubnode,
+                                subnodeId: data.subnodeId,
+                              },
+                            };
+                          }
+                          return node;
+                        })
+                      );
+                      
+                      // Make API call if flowId exists
+                      if (flowId) {
+                        const flowNodeId = flowNodeMap.get(nodeId);
+                        if (flowNodeId) {
+                          flowService.setFlowNodeSubnode(flowNodeId, data.subnodeId)
+                            .then(() => {
+                              console.log('✅ Subnode updated via properties panel API call');
+                              toast({
+                                title: "Subnode Updated",
+                                description: `Selected subnode changed to ${data.selectedSubnode.name}.`,
+                              });
+                            })
+                            .catch((error) => {
+                              console.error('❌ Error updating subnode:', error);
+                              toast({
+                                title: "Update Error",
+                                description: "Failed to update subnode selection.",
+                                variant: "destructive"
+                              });
+                            });
+                        }
+                      }
+                    }
+                    
+                    // Handle other node data updates
+                    setNodes((nds) =>
+                      nds.map((node) => {
+                        if (node.id === nodeId) {
+                          return {
+                            ...node,
+                            data: {
+                              ...node.data,
+                              ...data,
+                            },
+                          };
+                        }
+                        return node;
+                      })
+                    );
+                  }}
+                  onDeleteNode={handleDeleteNode}
+                  flowId={flowId}
+                />
               </ResizablePanel>
             </ResizablePanelGroup>
           </div>
