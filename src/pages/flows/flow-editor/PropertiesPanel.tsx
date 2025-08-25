@@ -30,21 +30,7 @@ export function PropertiesPanel({ selectedNode, onUpdateNode, onDeleteNode, flow
   const [availableSubnodes, setAvailableSubnodes] = useState<Subnode[]>([]);
   const [loadingSubnodes, setLoadingSubnodes] = useState(false);
 
-  if (!selectedNode) {
-    return (
-      <div className="w-80 bg-card border-l border-border shadow-sm flex items-center justify-center">
-        <div className="text-center p-6">
-          <Settings className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="font-medium text-foreground mb-2">No Node Selected</h3>
-          <p className="text-sm text-muted-foreground">
-            Click on a node to view and edit its properties
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Fetch subnodes for the selected node
+  // Fetch subnodes for the selected node - MUST be before early return
   useEffect(() => {
     if (selectedNode?.data?.nodeId) {
       setLoadingSubnodes(true);
@@ -66,6 +52,20 @@ export function PropertiesPanel({ selectedNode, onUpdateNode, onDeleteNode, flow
     }
   }, [selectedNode?.data?.nodeId]);
 
+  if (!selectedNode) {
+    return (
+      <div className="w-80 bg-card border-l border-border shadow-sm flex items-center justify-center">
+        <div className="text-center p-6">
+          <Settings className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="font-medium text-foreground mb-2">No Node Selected</h3>
+          <p className="text-sm text-muted-foreground">
+            Click on a node to view and edit its properties
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const handleSubnodeSelection = async (subnodeId: string) => {
     if (!selectedNode?.data) return;
     
@@ -81,7 +81,7 @@ export function PropertiesPanel({ selectedNode, onUpdateNode, onDeleteNode, flow
     // Make real-time API call if flowId is provided
     if (flowId && selectedNode.data?.nodeId) {
       try {
-        await flowService.updateFlowNodeSubnode(String(selectedNode.data.nodeId), subnodeId);
+        await flowService.setFlowNodeSubnode(String(selectedNode.data.nodeId), subnodeId);
         console.log('✅ Subnode selection updated successfully via API');
         toast.success(`Subnode "${selectedSubnode?.name}" selected successfully`);
       } catch (error) {
@@ -99,11 +99,8 @@ export function PropertiesPanel({ selectedNode, onUpdateNode, onDeleteNode, flow
   };
 
   const handleLabelChange = (value: string) => {
-    if (!selectedNode?.data) return;
-    onUpdateNode(selectedNode.id, {
-      ...(selectedNode.data as Record<string, any>),
-      label: value,
-    });
+    // Label is now read-only, this function is kept for compatibility
+    console.log('Label change attempted (read-only):', value);
   };
 
   const handleDescriptionChange = (value: string) => {
@@ -114,17 +111,7 @@ export function PropertiesPanel({ selectedNode, onUpdateNode, onDeleteNode, flow
     });
   };
 
-  const handleParameterChange = (key: string, value: string) => {
-    if (!selectedNode?.data) return;
-    const nodeData = selectedNode.data as Record<string, any>;
-    onUpdateNode(selectedNode.id, {
-      ...nodeData,
-      parameters: {
-        ...(nodeData.parameters || {}),
-        [key]: value,
-      },
-    });
-  };
+  // Remove parameter handlers since parameters section is removed
 
   return (
     <div className="w-80 bg-card border-l border-border shadow-sm">
@@ -167,8 +154,9 @@ export function PropertiesPanel({ selectedNode, onUpdateNode, onDeleteNode, flow
             <Input
               id="label"
               value={String(selectedNode.data?.label || '')}
-              onChange={(e) => handleLabelChange(e.target.value)}
+              readOnly
               placeholder="Node label"
+              className="bg-muted"
             />
           </div>
 
@@ -266,42 +254,6 @@ export function PropertiesPanel({ selectedNode, onUpdateNode, onDeleteNode, flow
           )}
         </div>
 
-        <Separator />
-
-        {/* Parameters */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-medium text-foreground">Parameters</h3>
-            <Button size="sm" variant="outline">
-              <Plus className="w-3 h-3 mr-1" />
-              Add
-            </Button>
-          </div>
-
-          {selectedNode.data && (selectedNode.data as any).parameters && Object.keys((selectedNode.data as any).parameters).length > 0 ? (
-            <div className="space-y-3">
-              {Object.entries((selectedNode.data as any).parameters).map(([key, value]) => (
-                <div key={key} className="space-y-2">
-                  <Label htmlFor={key} className="text-sm font-medium">
-                    {key}
-                  </Label>
-                  <Input
-                    id={key}
-                    value={String(value)}
-                    onChange={(e) => handleParameterChange(key, e.target.value)}
-                    placeholder={`${key} value`}
-                  />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-4 text-muted-foreground text-sm">
-              No parameters defined
-            </div>
-          )}
-        </div>
-
-        <Separator />
 
         {/* Node Info */}
         <div className="space-y-2">

@@ -243,7 +243,7 @@ export function FlowEditor() {
         console.log('🎯 Found subnode for selection:', selectedSubnode);
         
         if (selectedSubnode) {
-          await flowService.updateFlowNodeSubnode(flowNodeId, selectedSubnode.id);
+          await flowService.setFlowNodeSubnode(flowNodeId, selectedSubnode.id);
           
           console.log('✅ Subnode selection updated via API');
           toast({
@@ -325,9 +325,8 @@ export function FlowEditor() {
       if (flowId) {
         try {
           const flowNode = await flowService.createFlowNode({
-            node_family_id: nodeId,
-            flow_id: flowId,
-            from_node_id: null
+            node_family: nodeId,
+            flow: flowId
           });
           
           console.log('✅ FlowNode created via API:', flowNode);
