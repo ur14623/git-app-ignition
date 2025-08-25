@@ -555,54 +555,53 @@ export function FlowEditor() {
 
   const saveFlow = async () => {
     try {
-      if (flowId) {
-        // Validate flow before saving
-        const validation = await flowService.validateFlow(flowId);
-        
-        if (!validation.valid) {
-          toast({
-            title: "Validation Failed",
-            description: validation.errors?.join(', ') || "Flow has validation errors that need to be fixed.",
-            variant: "destructive"
-          });
-          return;
-        }
-
-        // Update existing flow
-        await flowService.updateFlow(flowId, {
-          name: currentFlow.name,
-          description: currentFlow.name, // Could be separate field
-        });
-        
+      if (!flowId) {
         toast({
-          title: "Flow Saved",
-          description: `${currentFlow.name} has been validated and saved successfully.`,
+          title: "Error",
+          description: "Flow ID is required to save.",
+          variant: "destructive"
         });
-        
-        // Redirect to flow management page
-        navigate('/flows');
-      } else {
-        // Create new flow first, then add nodes
-        const newFlow = await flowService.createFlow({
-          name: currentFlow.name,
-          description: currentFlow.name,
-        });
-        
-        // For new flows, we'd need to handle node creation here
-        toast({
-          title: "Flow Created",
-          description: `${currentFlow.name} has been created successfully.`,
-        });
-        
-        navigate(`/flows/${newFlow.id}/edit`);
+        return;
       }
+
+      console.log('🔍 Starting flow validation...');
       
-      updateCurrentFlow();
+      // First validate the flow
+      const validation = await flowService.validateFlow(flowId);
+      
+      if (!validation.valid) {
+        console.error('❌ Flow validation failed:', validation.errors);
+        toast({
+          title: "Validation Failed",
+          description: validation.errors?.map(e => e.error).join(', ') || "Flow has validation errors that need to be fixed.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('✅ Flow validation passed, saving...');
+
+      // If validation passes, save the flow
+      await flowService.updateFlow(flowId, {
+        name: currentFlow.name,
+        description: currentFlow.name,
+      });
+      
+      toast({
+        title: "Flow Saved",
+        description: `${currentFlow.name} has been validated and saved successfully.`,
+      });
+      
+      console.log('✅ Flow saved successfully, redirecting to flows list...');
+      
+      // Redirect to flow list page
+      navigate('/flows');
+      
     } catch (error) {
-      console.error('Error saving flow:', error);
+      console.error('❌ Error saving flow:', error);
       toast({
         title: "Save Error",
-        description: "Failed to save flow.",
+        description: "Failed to save flow. Please try again.",
         variant: "destructive"
       });
     }
@@ -997,7 +996,8 @@ export function FlowEditor() {
               Flow Creator - {currentFlow.name}
             </div>
             <div className="flex gap-2">
-              <Button onClick={saveFlow} variant="outline">
+              <Button onClick={saveFlow} variant="default">
+                <Save className="w-4 h-4 mr-2" />
                 Save Flow
               </Button>
               <Button 
@@ -1014,9 +1014,9 @@ export function FlowEditor() {
           <div className="h-[600px] w-full">
             <ResizablePanelGroup direction="horizontal" className="h-full">
               <ResizablePanel 
-                defaultSize={20} 
-                minSize={15} 
-                maxSize={30}
+                defaultSize={25} 
+                minSize={20} 
+                maxSize={40}
                 className="min-w-[280px]"
               >
                 <NodePalette onAddNode={addNodeToCanvas} />
@@ -1025,8 +1025,8 @@ export function FlowEditor() {
               <ResizableHandle withHandle />
               
               <ResizablePanel 
-                defaultSize={55} 
-                minSize={40}
+                defaultSize={75} 
+                minSize={60}
                 className="min-w-[400px]"
               >
                  <div className="h-full bg-muted rounded-lg border border-border">
@@ -1054,83 +1054,6 @@ export function FlowEditor() {
                     <Background color="hsl(var(--border))" />
                   </ReactFlow>
                 </div>
-              </ResizablePanel>
-
-              <ResizableHandle withHandle />
-
-              <ResizablePanel 
-                defaultSize={25} 
-                minSize={20} 
-                maxSize={35}
-                className="min-w-[300px]"
-              >
-                <PropertiesPanel
-                  selectedNode={selectedNode}
-                  onUpdateNode={(nodeId, data) => {
-                    // Handle subnode selection from properties panel
-                    if (data.subnodeId && data.selectedSubnode) {
-                      console.log('🔧 Subnode selected from properties panel:', data.selectedSubnode);
-                      
-                      // Update node data optimistically
-                      setNodes((nds) =>
-                        nds.map((node) => {
-                          if (node.id === nodeId) {
-                            return {
-                              ...node,
-                              data: {
-                                ...node.data,
-                                selectedSubnode: data.selectedSubnode,
-                                subnodeId: data.subnodeId,
-                              },
-                            };
-                          }
-                          return node;
-                        })
-                      );
-                      
-                      // Make API call if flowId exists
-                      if (flowId) {
-                        const flowNodeId = flowNodeMap.get(nodeId);
-                        if (flowNodeId) {
-                          flowService.setFlowNodeSubnode(flowNodeId, data.subnodeId)
-                            .then(() => {
-                              console.log('✅ Subnode updated via properties panel API call');
-                              toast({
-                                title: "Subnode Updated",
-                                description: `Selected subnode changed to ${data.selectedSubnode.name}.`,
-                              });
-                            })
-                            .catch((error) => {
-                              console.error('❌ Error updating subnode:', error);
-                              toast({
-                                title: "Update Error",
-                                description: "Failed to update subnode selection.",
-                                variant: "destructive"
-                              });
-                            });
-                        }
-                      }
-                    }
-                    
-                    // Handle other node data updates
-                    setNodes((nds) =>
-                      nds.map((node) => {
-                        if (node.id === nodeId) {
-                          return {
-                            ...node,
-                            data: {
-                              ...node.data,
-                              ...data,
-                            },
-                          };
-                        }
-                        return node;
-                      })
-                    );
-                  }}
-                  onDeleteNode={handleDeleteNode}
-                  flowId={flowId}
-                />
               </ResizablePanel>
             </ResizablePanelGroup>
           </div>
