@@ -124,24 +124,6 @@ export function PropertiesPanel({ selectedNode, onUpdateNode, onDeleteNode, flow
             {selectedNode.type}
           </Badge>
         </div>
-        
-        <div className="flex gap-2">
-          <Button size="sm" variant="outline" className="flex-1">
-            <Play className="w-3 h-3 mr-1" />
-            Test
-          </Button>
-          <Button size="sm" variant="outline" className="flex-1">
-            <Copy className="w-3 h-3 mr-1" />
-            Clone
-          </Button>
-          <Button 
-            size="sm" 
-            variant="destructive" 
-            onClick={() => onDeleteNode(selectedNode.id)}
-          >
-            <Trash2 className="w-3 h-3" />
-          </Button>
-        </div>
       </div>
 
       <div className="p-4 space-y-6 overflow-y-auto max-h-[calc(100vh-12rem)]">
