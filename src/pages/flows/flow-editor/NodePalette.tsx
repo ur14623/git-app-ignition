@@ -165,9 +165,6 @@ export function NodePalette({ onAddNode }: NodePaletteProps) {
                       <h4 className="text-sm font-medium text-foreground truncate">
                         {node.name}
                       </h4>
-                      <p className="text-xs text-muted-foreground">
-                        v{node.version} • {node.versions?.length || 0} version{(node.versions?.length || 0) !== 1 ? 's' : ''}
-                      </p>
                     </div>
                   </div>
                   <Button
