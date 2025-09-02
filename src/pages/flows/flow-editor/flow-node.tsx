@@ -54,7 +54,7 @@ export const FlowNode = memo(({ data, selected }: FlowNodeProps) => {
             variant={data.deployed ? "default" : "outline"}
             className={`text-xs ${data.deployed ? 'bg-node-deployed text-white' : 'text-node-undeployed border-node-undeployed'}`}
           >
-            {data.deployed ? "Active" : "Inactive"}
+            Active
           </Badge>
         </div>
         
@@ -67,23 +67,15 @@ export const FlowNode = memo(({ data, selected }: FlowNodeProps) => {
           <div className="text-xs text-muted-foreground">{data.description}</div>
         )}
 
-        {/* Display selected subnode or message if none selected */}
+        {/* Display selected subnode name */}
         <div className="mt-2">
           {selectedSubnode ? (
             <div className="text-xs p-2 bg-background/50 rounded border text-muted-foreground">
-              <div className="flex items-center justify-between">
-                <div className="font-medium truncate">{selectedSubnode.name}</div>
-                <Badge variant="default" className="text-[10px] px-1">
-                  Selected
-                </Badge>
-              </div>
-              <div className="text-[10px] text-muted-foreground mt-1">
-                Version {selectedSubnode.version || 1}
-              </div>
+              <div className="font-medium truncate">{selectedSubnode.name}</div>
             </div>
           ) : (
             <div className="text-xs text-muted-foreground/60 p-2 bg-background/30 rounded border border-dashed">
-              Subnode not selected
+              No subnode selected
             </div>
           )}
         </div>
