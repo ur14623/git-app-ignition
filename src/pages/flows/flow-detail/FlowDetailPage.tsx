@@ -141,6 +141,7 @@ export function FlowDetailPage() {
 
   // Helper function to determine node type based on name or other criteria
   const getNodeType = (nodeName: string): string => {
+    if (!nodeName) return 'generic';
     const name = nodeName.toLowerCase();
     if (name.includes('sftp') || name.includes('collector')) return 'sftp_collector';
     if (name.includes('fdc')) return 'fdc';
