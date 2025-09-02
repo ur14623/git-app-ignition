@@ -411,6 +411,9 @@ export function RealTimeFlowEditor({ flowId }: RealTimeFlowEditorProps) {
           return newMap;
         });
 
+        // Close sidebar if deleted node was selected
+        setSelectedNode(null);
+
         toast({
           title: "Node Removed",
           description: "Node has been removed from the flow.",
@@ -426,12 +429,14 @@ export function RealTimeFlowEditor({ flowId }: RealTimeFlowEditorProps) {
     } else {
       // Just remove from canvas if no API mapping
       setNodes((nds) => nds.filter(node => node.id !== nodeId));
+      // Close sidebar if deleted node was selected
+      setSelectedNode(null);
       toast({
         title: "Node Removed",
         description: "Node has been removed from canvas.",
       });
     }
-  }, [flowNodeMap, setNodes, toast]);
+  }, [flowNodeMap, setNodes, setSelectedNode, toast]);
 
   const onNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {

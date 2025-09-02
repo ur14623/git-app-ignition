@@ -66,10 +66,10 @@ export const FlowNode = memo(({ data, selected }: FlowNodeProps) => {
           <div className="text-xs text-muted-foreground">{data.description}</div>
         )}
 
-        {/* Display selected subnode name */}
+        {/* Display selected subnode name only */}
         <div className="mt-2">
           {selectedSubnode ? (
-            <div className="text-xs p-2 bg-background/50 rounded border text-muted-foreground">
+            <div className="text-xs p-2 bg-background/50 rounded border text-foreground">
               <div className="font-medium truncate">{selectedSubnode.name}</div>
             </div>
           ) : (
