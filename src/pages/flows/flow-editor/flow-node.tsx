@@ -60,7 +60,6 @@ export const FlowNode = memo(({ data, selected }: FlowNodeProps) => {
         
         <div className="text-xs text-muted-foreground">
           {data.nodeType && <div>Type: {data.nodeType.replace('_', ' ')}</div>}
-          {data.version && <div>Version: {data.version}</div>}
         </div>
         
         {data.description && (

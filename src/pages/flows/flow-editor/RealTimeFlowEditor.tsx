@@ -385,6 +385,54 @@ export function RealTimeFlowEditor({ flowId }: RealTimeFlowEditorProps) {
     }
   }, [flowId, toast]);
 
+  // Handle node update
+  const handleUpdateNode = useCallback((nodeId: string, data: any) => {
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === nodeId ? { ...node, data: { ...node.data, ...data } } : node
+      )
+    );
+  }, [setNodes]);
+
+  // Handle node deletion
+  const handleDeleteNode = useCallback(async (nodeId: string) => {
+    const flowNodeId = flowNodeMap.get(nodeId);
+    if (flowNodeId) {
+      try {
+        // 🚀 Real-time API call: Delete FlowNode immediately
+        await flowService.deleteFlowNode(flowNodeId);
+        console.log('✅ FlowNode deleted:', flowNodeId);
+
+        // Remove from canvas
+        setNodes((nds) => nds.filter(node => node.id !== nodeId));
+        setFlowNodeMap(prev => {
+          const newMap = new Map(prev);
+          newMap.delete(nodeId);
+          return newMap;
+        });
+
+        toast({
+          title: "Node Removed",
+          description: "Node has been removed from the flow.",
+        });
+      } catch (error) {
+        console.error('❌ Error deleting node:', error);
+        toast({
+          title: "Delete Error",
+          description: "Failed to remove node from flow.",
+          variant: "destructive"
+        });
+      }
+    } else {
+      // Just remove from canvas if no API mapping
+      setNodes((nds) => nds.filter(node => node.id !== nodeId));
+      toast({
+        title: "Node Removed",
+        description: "Node has been removed from canvas.",
+      });
+    }
+  }, [flowNodeMap, setNodes, toast]);
+
   const onNodeClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
       setSelectedNode(node);
@@ -510,8 +558,8 @@ export function RealTimeFlowEditor({ flowId }: RealTimeFlowEditorProps) {
           <ResizablePanel defaultSize={20} minSize={15} maxSize={35}>
             <PropertiesPanel 
               selectedNode={selectedNode}
-              onUpdateNode={() => {}}
-              onDeleteNode={() => {}}
+              onUpdateNode={handleUpdateNode}
+              onDeleteNode={handleDeleteNode}
               flowId={flowId}
             />
           </ResizablePanel>
