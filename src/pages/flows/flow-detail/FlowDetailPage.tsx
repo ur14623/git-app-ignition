@@ -261,15 +261,7 @@ export function FlowDetailPage() {
               Stop
             </Button>
           )}
-          {canEdit() ? (
-            <Button onClick={() => navigate(`/flows/${id}/edit`)}>
-              Edit Flow
-            </Button>
-          ) : (
-            <Button onClick={() => handleCreateNewVersion()}>
-              Create New Version
-            </Button>
-          )}
+          {/* Edit buttons removed for configuration view */}
         </div>
       </div>
 

@@ -174,10 +174,10 @@ export function SubnodeDetailPage() {
       <SubnodeHeader
         subnode={subnode}
         selectedVersion={selectedVersion}
-        onEditVersion={handleEditVersion}
+        onEditVersion={() => {}} // Disabled for configuration view
         onDeployVersion={handleDeployVersion}
         onUndeployVersion={handleUndeployVersion}
-        onCreateNewVersion={() => setShowCreateVersionModal(true)}
+        onCreateNewVersion={() => {}} // Disabled for configuration view
         onShowVersionHistory={() => setShowVersionHistoryModal(true)}
         onRefresh={refetch}
         isLoading={isLoading}

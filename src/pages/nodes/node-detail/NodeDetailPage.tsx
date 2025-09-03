@@ -389,9 +389,9 @@ export function NodeDetailPage() {
       <NodeHeader
         node={node}
         selectedVersion={selectedVersion}
-        onEditVersion={handleEditVersion}
+        onEditVersion={() => {}} // Disabled for configuration view
         onToggleDeployment={handleToggleDeployment}
-        onCreateNewVersion={handleCreateNewVersion}
+        onCreateNewVersion={() => {}} // Disabled for configuration view
         onShowVersionHistory={handleShowVersionHistory}
         onDeleteVersion={handleDeleteVersion}
         onCloneVersion={handleCloneVersion}
