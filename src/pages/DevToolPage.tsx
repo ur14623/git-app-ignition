@@ -37,14 +37,7 @@ export function DevToolPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // View preferences state
-  const [viewMode, setViewMode] = useState<{[key: string]: 'grid' | 'list'}>({
-    flows: 'grid',
-    nodes: 'grid', 
-    subnodes: 'grid',
-    parameters: 'grid'
-  });
-  
+  // Display limits state
   const [displayLimits, setDisplayLimits] = useState<{[key: string]: number}>({
     flows: 10,
     nodes: 10,
@@ -70,11 +63,7 @@ export function DevToolPage() {
   const [parameters, setParameters] = useState<any[]>([]);
   const [parametersLoading, setParametersLoading] = useState(true);
 
-  // Helper functions for view management
-  const handleViewModeChange = (category: string, mode: 'grid' | 'list') => {
-    setViewMode(prev => ({ ...prev, [category]: mode }));
-  };
-
+  // Helper functions
   const handleDisplayLimitChange = (category: string, limit: number) => {
     setDisplayLimits(prev => ({ ...prev, [category]: limit }));
   };
@@ -86,27 +75,6 @@ export function DevToolPage() {
   // Render controls component
   const renderViewControls = (category: string, itemCount: number) => (
     <div className="flex items-center gap-4">
-      <div className="flex items-center gap-2">
-        <Label htmlFor={`view-${category}`} className="text-sm">View:</Label>
-        <div className="flex border rounded-md">
-          <Button
-            variant={viewMode[category] === 'grid' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => handleViewModeChange(category, 'grid')}
-            className="rounded-r-none"
-          >
-            <Grid3X3 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={viewMode[category] === 'list' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => handleViewModeChange(category, 'list')}
-            className="rounded-l-none"
-          >
-            <List className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
       <div className="flex items-center gap-2">
         <Label htmlFor={`limit-${category}`} className="text-sm">Show:</Label>
         <Select
@@ -527,58 +495,9 @@ export function DevToolPage() {
                 <div className="space-y-4">
                   {renderViewControls('flows', flows.length)}
                   
-                  {viewMode.flows === 'grid' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {getDisplayedItems(flows, 'flows').map((flow: any) => (
-                        <Card key={flow.id} className="bg-card/50 backdrop-blur-sm border-border/50">
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-foreground text-lg font-semibold flex items-center justify-between">
-                              {flow.name}
-                              <Badge variant={flow.is_deployed ? "default" : "outline"}>
-                                {flow.is_deployed ? "Deployed" : "Draft"}
-                              </Badge>
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            <div className="flex flex-wrap gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => navigate(`/flows/${flow.id}/edit`)}
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleExportFlow(flow)}
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleCloneFlow(flow)}
-                              >
-                                <Copy className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => handleDeleteFlow(flow.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-lg">
-                      {renderFlowsList(getDisplayedItems(flows, 'flows'))}
-                    </div>
-                  )}
+                  <div className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-lg">
+                    {renderFlowsList(getDisplayedItems(flows, 'flows'))}
+                  </div>
                 </div>
               )}
             </TabsContent>
@@ -605,58 +524,9 @@ export function DevToolPage() {
                 <div className="space-y-4">
                   {renderViewControls('nodes', nodes.length)}
                   
-                  {viewMode.nodes === 'grid' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {getDisplayedItems(nodes, 'nodes').map((node: any) => (
-                        <Card key={node.id} className="bg-card/50 backdrop-blur-sm border-border/50">
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-foreground text-lg font-semibold flex items-center justify-between">
-                              {node.name}
-                              <Badge variant={node.is_deployed ? "default" : "outline"}>
-                                {node.is_deployed ? "Deployed" : "Draft"}
-                              </Badge>
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            <div className="flex flex-wrap gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => navigate(`/nodes/${node.id}/edit`)}
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleExportNode(node)}
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {/* Clone functionality */}}
-                              >
-                                <Copy className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => handleDeleteNode(node.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-lg">
-                      {renderNodesList(getDisplayedItems(nodes, 'nodes'))}
-                    </div>
-                  )}
+                  <div className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-lg">
+                    {renderNodesList(getDisplayedItems(nodes, 'nodes'))}
+                  </div>
                 </div>
               )}
             </TabsContent>
@@ -683,58 +553,9 @@ export function DevToolPage() {
                 <div className="space-y-4">
                   {renderViewControls('subnodes', (subnodesData?.results || []).length)}
                   
-                  {viewMode.subnodes === 'grid' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {getDisplayedItems((subnodesData?.results || []), 'subnodes').map((subnode: any) => (
-                        <Card key={subnode.id} className="bg-card/50 backdrop-blur-sm border-border/50">
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-foreground text-lg font-semibold flex items-center justify-between">
-                              {subnode.name}
-                              <Badge variant={subnode.active_version ? "default" : "outline"}>
-                                {subnode.active_version ? "Active" : "Inactive"}
-                              </Badge>
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            <div className="flex flex-wrap gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => navigate(`/subnodes/${subnode.id}/edit`)}
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleExportSubnode(subnode)}
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {/* Clone functionality */}}
-                              >
-                                <Copy className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => handleDeleteSubnode(subnode.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-lg">
-                      {renderSubnodesList(getDisplayedItems((subnodesData?.results || []), 'subnodes'))}
-                    </div>
-                  )}
+                  <div className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-lg">
+                    {renderSubnodesList(getDisplayedItems((subnodesData?.results || []), 'subnodes'))}
+                  </div>
                 </div>
               )}
             </TabsContent>
@@ -761,58 +582,9 @@ export function DevToolPage() {
                 <div className="space-y-4">
                   {renderViewControls('parameters', parameters.length)}
                   
-                  {viewMode.parameters === 'grid' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {getDisplayedItems(parameters, 'parameters').map((param: any) => (
-                        <Card key={param.id} className="bg-card/50 backdrop-blur-sm border-border/50">
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-foreground text-lg font-semibold flex items-center justify-between">
-                              {param.key}
-                              <Badge variant={param.is_active ? "default" : "outline"}>
-                                {param.is_active ? "Active" : "Inactive"}
-                              </Badge>
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            <div className="flex flex-wrap gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => navigate(`/parameters/${param.id}/edit`)}
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleExportParameter(param.id)}
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {/* Clone functionality */}}
-                              >
-                                <Copy className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => handleDeleteParameter(param.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-lg">
-                      {renderParametersList(getDisplayedItems(parameters, 'parameters'))}
-                    </div>
-                  )}
+                  <div className="bg-card/30 backdrop-blur-sm border border-border/50 rounded-lg">
+                    {renderParametersList(getDisplayedItems(parameters, 'parameters'))}
+                  </div>
                 </div>
               )}
             </TabsContent>
