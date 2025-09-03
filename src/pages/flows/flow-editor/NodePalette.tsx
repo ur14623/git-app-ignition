@@ -22,7 +22,6 @@ interface NodePaletteProps {
 
 // Icon mapping for different node types
 const getNodeIcon = (nodeName: string) => {
-  if (!nodeName) return Activity;
   const name = nodeName.toLowerCase();
   if (name.includes('sftp') || name.includes('collector')) return Database;
   if (name.includes('fdc')) return CheckCircle;
@@ -38,7 +37,6 @@ const getNodeIcon = (nodeName: string) => {
 
 // Color mapping for different node types
 const getNodeColor = (nodeName: string) => {
-  if (!nodeName) return 'bg-blue-500';
   const name = nodeName.toLowerCase();
   if (name.includes('sftp') || name.includes('collector')) return 'bg-blue-500';
   if (name.includes('fdc')) return 'bg-green-500';
@@ -142,7 +140,6 @@ export function NodePalette({ onAddNode }: NodePaletteProps) {
           </div>
         ) : (
           nodes.map((node) => {
-            if (!node || !node.name) return null;
             const Icon = getNodeIcon(node.name);
             const colorClass = getNodeColor(node.name);
             
@@ -165,6 +162,9 @@ export function NodePalette({ onAddNode }: NodePaletteProps) {
                       <h4 className="text-sm font-medium text-foreground truncate">
                         {node.name}
                       </h4>
+                      <p className="text-xs text-muted-foreground">
+                        v{node.version} • {node.versions?.length || 0} version{(node.versions?.length || 0) !== 1 ? 's' : ''}
+                      </p>
                     </div>
                   </div>
                   <Button

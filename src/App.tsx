@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 
 import { MainLayout } from "@/components/layout/main-layout";
+import { DashboardPage } from "@/pages/DashboardPage";
 import { HomePage } from "@/pages/HomePage";
 import { FlowsPage } from "@/pages/flows/FlowsPage";
 import { FlowDetailPage } from "@/pages/flows/flow-detail/FlowDetailPage";
@@ -30,6 +31,7 @@ import { FlowReportPage } from "@/pages/reports/FlowReportPage";
 import { NodeReportPage } from "@/pages/reports/NodeReportPage";
 import { FlowAlertPage } from "@/pages/alerts/FlowAlertPage";
 import { NodeAlertPage } from "@/pages/alerts/NodeAlertPage";
+import { DevToolPage } from "@/pages/DevToolPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,7 +50,7 @@ const App = () => (
         <BrowserRouter>
           <MainLayout>
             <Routes>
-              <Route path="/" element={<HomePage />} />
+              <Route path="/" element={<DashboardPage />} />
               <Route path="/flows" element={<FlowsPage />} />
               <Route path="/flows/:id" element={<FlowDetailPage />} />
               <Route path="/flows/:id/edit" element={<FlowEditorRoute />} />
@@ -72,6 +74,7 @@ const App = () => (
               <Route path="/reports/nodes" element={<NodeReportPage />} />
               <Route path="/alerts/flows" element={<FlowAlertPage />} />
               <Route path="/alerts/nodes" element={<NodeAlertPage />} />
+              <Route path="/devtool" element={<DevToolPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

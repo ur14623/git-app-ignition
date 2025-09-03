@@ -254,22 +254,9 @@ export function ParametersPage() {
               <List className="h-4 w-4" />
             </Button>
           </div>
-          <Button variant="outline" size="sm" asChild>
-            <label htmlFor="import-file" className="cursor-pointer">
-              <Upload className="h-4 w-4" />
-            </label>
-          </Button>
-          <input
-            id="import-file"
-            type="file"
-            accept=".json"
-            onChange={handleImport}
-            className="hidden"
-          />
-          <Button onClick={() => navigate("/parameters/new")}>
-            <Plus className="h-4 w-4 mr-2" />
-            NEW
-          </Button>
+          <div className="text-sm text-muted-foreground">
+            Read-only view - Use DevTool for management operations
+          </div>
         </div>
       </div>
 
@@ -305,21 +292,6 @@ export function ParametersPage() {
                       <DropdownMenuItem onClick={() => navigate(`/parameters/${param.id}`)}>
                         <Eye className="h-4 w-4 mr-2" />
                         View
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleExport(param.id)}>
-                        <Download className="h-4 w-4 mr-2" />
-                        Export
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleClone(param)}>
-                        <Copy className="h-4 w-4 mr-2" />
-                        Clone
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleDelete(param.id)}
-                        className="text-destructive focus:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -365,27 +337,6 @@ export function ParametersPage() {
                         onClick={() => navigate(`/parameters/${param.id}`)}
                       >
                         <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleExport(param.id)}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleClone(param)}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleDelete(param.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>

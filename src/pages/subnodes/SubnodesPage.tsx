@@ -165,31 +165,9 @@ export function SubnodesPage() {
               <List className="h-4 w-4" />
             </Button>
           </div>
-          <Button variant="outline" size="sm" onClick={() => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-            input.onchange = async (e) => {
-              const file = (e.target as HTMLInputElement).files?.[0];
-              if (file) {
-                try {
-                  await subnodeService.importSubnode(file);
-                  toast.success("Subnode imported successfully");
-                  refetch();
-                } catch (error) {
-                  toast.error("Failed to import subnode");
-                  console.error("Import error:", error);
-                }
-              }
-            };
-            input.click();
-          }}>
-            <Upload className="h-4 w-4" />
-          </Button>
-          <Button onClick={() => navigate("/subnodes/create")}>
-            <Plus className="h-4 w-4 mr-2" />
-            NEW
-          </Button>
+          <div className="text-sm text-muted-foreground">
+            Read-only view - Use DevTool for management operations
+          </div>
         </div>
       </div>
 
@@ -242,21 +220,6 @@ export function SubnodesPage() {
                         <Eye className="h-4 w-4 mr-2" />
                         View
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleExport(subnode)}>
-                        <Download className="h-4 w-4 mr-2" />
-                        Export
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleClone(subnode)}>
-                        <Copy className="h-4 w-4 mr-2" />
-                        Clone
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleDelete(subnode.id)}
-                        className="text-destructive focus:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -304,27 +267,6 @@ export function SubnodesPage() {
                         onClick={() => navigate(`/subnodes/${subnode.id}`)}
                       >
                         <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleExport(subnode)}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleClone(subnode)}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => handleDelete(subnode.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>

@@ -8,7 +8,8 @@ import {
   AlertTriangle,
   FileText,
   Bell,
-  BarChart3
+  BarChart3,
+  Wrench
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useSection } from "@/contexts/SectionContext";
@@ -42,6 +43,10 @@ const alertItems = [
 const reportItems = [
   { title: "Flow Report", url: "/reports/flows", icon: FileText },
   { title: "Node Report", url: "/reports/nodes", icon: BarChart3 },
+];
+
+const devToolItems = [
+  { title: "DevTool", url: "/devtool", icon: Wrench },
 ];
 
 export function AppSidebar() {
@@ -149,6 +154,33 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {reportItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink 
+                      to={item.url} 
+                      className={getNavClasses(item.url)}
+                      onClick={() => handleSectionClick(item.title)}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {!collapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarSeparator />
+
+        {/* Development Tools Group */}
+        <SidebarGroup>
+          <SidebarGroupLabel className={collapsed ? "sr-only" : ""}>
+            Development
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {devToolItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink 

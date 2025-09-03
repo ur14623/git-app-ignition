@@ -254,13 +254,9 @@ export function NodesPage() {
               <List className="h-4 w-4" />
             </Button>
           </div>
-          <Button variant="outline" size="sm">
-            <Upload className="h-4 w-4" />
-          </Button>
-          <Button onClick={() => navigate("/nodes/new")}>
-            <Plus className="h-4 w-4 mr-2" />
-            NEW
-          </Button>
+          <div className="text-sm text-muted-foreground">
+            Read-only view - Use DevTool for management operations
+          </div>
         </div>
       </div>
 
@@ -306,21 +302,6 @@ export function NodesPage() {
                         <Eye className="h-4 w-4 mr-2" />
                         View
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleExport(node)}>
-                        <Download className="h-4 w-4 mr-2" />
-                        Export
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleClone(node)}>
-                        <Copy className="h-4 w-4 mr-2" />
-                        Clone
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleDelete(node.id)}
-                        className="text-destructive focus:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -357,27 +338,6 @@ export function NodesPage() {
                         onClick={() => navigate(`/nodes/${node.id}`)}
                       >
                         <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleExport(node)}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleClone(node)}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => handleDelete(node.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>

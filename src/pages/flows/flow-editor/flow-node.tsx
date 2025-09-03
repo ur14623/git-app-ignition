@@ -18,19 +18,12 @@ interface FlowNodeProps {
     parameters?: any[];
     description?: string;
     version?: number;
-    selectedSubnode?: {
-      id: string;
-      name: string;
-      version?: number;
-      parameters?: any[];
-    };
   };
   selected: boolean;
 }
 
 export const FlowNode = memo(({ data, selected }: FlowNodeProps) => {
-  // Get the selected subnode from data
-  const selectedSubnode = data.selectedSubnode;
+  const [isSubnodesOpen, setIsSubnodesOpen] = useState(false);
 
   return (
     <div 
@@ -54,30 +47,53 @@ export const FlowNode = memo(({ data, selected }: FlowNodeProps) => {
             variant={data.deployed ? "default" : "outline"}
             className={`text-xs ${data.deployed ? 'bg-node-deployed text-white' : 'text-node-undeployed border-node-undeployed'}`}
           >
-            Active
+            {data.deployed ? "Active" : "Inactive"}
           </Badge>
         </div>
         
         <div className="text-xs text-muted-foreground">
           {data.nodeType && <div>Type: {data.nodeType.replace('_', ' ')}</div>}
+          {data.version && <div>Version: {data.version}</div>}
         </div>
         
         {data.description && (
           <div className="text-xs text-muted-foreground">{data.description}</div>
         )}
 
-        {/* Display selected subnode name only */}
-        <div className="mt-2">
-          {selectedSubnode ? (
-            <div className="text-xs p-2 bg-background/50 rounded border text-foreground">
-              <div className="font-medium truncate">{selectedSubnode.name}</div>
-            </div>
-          ) : (
-            <div className="text-xs text-muted-foreground/60 p-2 bg-background/30 rounded border border-dashed">
-              No subnode selected
-            </div>
-          )}
-        </div>
+        {data.subnodes && data.subnodes.length > 0 && (
+          <div className="mt-2">
+            <Collapsible open={isSubnodesOpen} onOpenChange={setIsSubnodesOpen}>
+              <CollapsibleTrigger className="flex items-center text-xs text-muted-foreground hover:text-foreground transition-colors w-full">
+                <ChevronDown className={`h-3 w-3 mr-1 transition-transform ${isSubnodesOpen ? 'rotate-180' : ''}`} />
+                {data.subnodes.length} Subnode{data.subnodes.length > 1 ? 's' : ''}
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-1 space-y-1">
+                {data.subnodes.map((subnode: any) => (
+                  <div key={subnode.id} className="text-xs p-2 bg-background/50 rounded border text-muted-foreground">
+                    <div className="flex items-center justify-between">
+                      <div className="font-medium truncate">{subnode.name}</div>
+                      <Badge variant={subnode.is_selected ? "default" : "secondary"} className="text-[10px] px-1">
+                        {subnode.is_selected ? "Selected" : "Inactive"}
+                      </Badge>
+                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-1">
+                      Version {subnode.version}
+                    </div>
+                    {subnode.parameters && subnode.parameters.length > 0 && (
+                      <div className="text-[10px] text-muted-foreground mt-1">
+                        {subnode.parameters.length} parameter{subnode.parameters.length > 1 ? 's' : ''}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+          </div>
+        )}
+
+        {(!data.subnodes || data.subnodes.length === 0) && (
+          <div className="text-xs text-muted-foreground/60">No subnodes</div>
+        )}
       </div>
       
       <Handle 

@@ -124,60 +124,50 @@ export function PropertiesPanel({ selectedNode, onUpdateNode, onDeleteNode, flow
             {selectedNode.type}
           </Badge>
         </div>
+        
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" className="flex-1">
+            <Play className="w-3 h-3 mr-1" />
+            Test
+          </Button>
+          <Button size="sm" variant="outline" className="flex-1">
+            <Copy className="w-3 h-3 mr-1" />
+            Clone
+          </Button>
+          <Button 
+            size="sm" 
+            variant="destructive" 
+            onClick={() => onDeleteNode(selectedNode.id)}
+          >
+            <Trash2 className="w-3 h-3" />
+          </Button>
+        </div>
       </div>
 
       <div className="p-4 space-y-6 overflow-y-auto max-h-[calc(100vh-12rem)]">
-        {/* Basic Information */}
+        {/* Basic Properties */}
         <div className="space-y-4">
-          <h3 className="font-medium text-foreground">Basic Information</h3>
+          <h3 className="font-medium text-foreground">Basic Properties</h3>
           
           <div className="space-y-2">
-            <Label htmlFor="node-name">Node Name</Label>
+            <Label htmlFor="label">Label</Label>
             <Input
-              id="node-name"
+              id="label"
               value={String(selectedNode.data?.label || '')}
               readOnly
+              placeholder="Node label"
               className="bg-muted"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="version-count">Number of Versions</Label>
-            <Input
-              id="version-count"
-              value={String(selectedNode.data?.versionCount || 1)}
-              readOnly
-              className="bg-muted"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="active-version">Active Version</Label>
-            <Input
-              id="active-version"
-              value={`Version ${selectedNode.data?.activeVersion || 1}`}
-              readOnly
-              className="bg-muted"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="subnode-count">Subnode Number</Label>
-            <Input
-              id="subnode-count"
-              value={String(availableSubnodes.length)}
-              readOnly
-              className="bg-muted"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="parameter-count">Parameter Number</Label>
-            <Input
-              id="parameter-count"
-              value={String((selectedNode.data?.selectedSubnode as Subnode)?.parameters?.length || 0)}
-              readOnly
-              className="bg-muted"
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={String(selectedNode.data?.description || '')}
+              onChange={(e) => handleDescriptionChange(e.target.value)}
+              placeholder="Optional description"
+              className="min-h-20"
             />
           </div>
         </div>
@@ -265,20 +255,14 @@ export function PropertiesPanel({ selectedNode, onUpdateNode, onDeleteNode, flow
         </div>
 
 
-        <Separator />
-
-        {/* Actions */}
-        <div className="space-y-4">
-          <h3 className="font-medium text-foreground">Actions</h3>
-          <Button 
-            variant="destructive" 
-            size="sm" 
-            className="w-full"
-            onClick={() => onDeleteNode(selectedNode.id)}
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Remove Node
-          </Button>
+        {/* Node Info */}
+        <div className="space-y-2">
+          <h3 className="font-medium text-foreground">Node Info</h3>
+          <div className="text-sm text-muted-foreground space-y-1">
+            <div>ID: <code className="text-xs bg-muted px-1 rounded">{selectedNode.id}</code></div>
+            <div>Position: {Math.round(selectedNode.position.x)}, {Math.round(selectedNode.position.y)}</div>
+            <div>Type: {selectedNode.type}</div>
+          </div>
         </div>
       </div>
     </div>

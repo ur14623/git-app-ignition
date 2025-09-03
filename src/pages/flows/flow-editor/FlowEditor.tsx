@@ -52,8 +52,6 @@ import {
 } from '@/components/ui/table';
 import { NodeConfigDialog } from '@/components/NodeConfigDialog';
 import { NodePalette } from './NodePalette';
-import { PropertiesPanel } from './PropertiesPanel';
-import { FlowNode } from './flow-node';
 import { useFlow, flowService } from '@/services/flowService';
 import { nodeService } from '@/services/nodeService';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
@@ -119,7 +117,6 @@ export function FlowEditor() {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<NodeData>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [editingNode, setEditingNode] = useState<string | null>(null);
-  const [selectedNode, setSelectedNode] = useState<Node<NodeData> | null>(null);
   const [flowNodeMap, setFlowNodeMap] = useState<Map<string, string>>(new Map()); // Canvas node ID -> FlowNode ID mapping
 
   // Update flow data when loaded from API
@@ -555,82 +552,56 @@ export function FlowEditor() {
 
   const saveFlow = async () => {
     try {
-      if (!flowId) {
-        toast({
-          title: "Error",
-          description: "Flow ID is required to save.",
-          variant: "destructive"
+      if (flowId) {
+        // Validate flow before saving
+        const validation = await flowService.validateFlow(flowId);
+        
+        if (!validation.valid) {
+          toast({
+            title: "Validation Failed",
+            description: validation.errors?.join(', ') || "Flow has validation errors that need to be fixed.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        // Update existing flow
+        await flowService.updateFlow(flowId, {
+          name: currentFlow.name,
+          description: currentFlow.name, // Could be separate field
         });
-        return;
-      }
-
-      console.log('🔍 Starting flow validation...');
-      
-      // First validate the flow
-      const validation = await flowService.validateFlow(flowId);
-      
-      if (!validation.valid) {
-        console.error('❌ Flow validation failed:', validation.errors);
+        
         toast({
-          title: "Validation Failed",
-          description: validation.errors?.map(e => e.error).join(', ') || "Flow has validation errors that need to be fixed.",
-          variant: "destructive"
+          title: "Flow Saved",
+          description: `${currentFlow.name} has been validated and saved successfully.`,
         });
-        return;
+        
+        // Redirect to flow management page
+        navigate('/flows');
+      } else {
+        // Create new flow first, then add nodes
+        const newFlow = await flowService.createFlow({
+          name: currentFlow.name,
+          description: currentFlow.name,
+        });
+        
+        // For new flows, we'd need to handle node creation here
+        toast({
+          title: "Flow Created",
+          description: `${currentFlow.name} has been created successfully.`,
+        });
+        
+        navigate(`/flows/${newFlow.id}/edit`);
       }
-
-      console.log('✅ Flow validation passed, saving...');
-
-      // If validation passes, save the flow
-      await flowService.updateFlow(flowId, {
-        name: currentFlow.name,
-        description: currentFlow.name,
-      });
       
-      toast({
-        title: "Flow Saved",
-        description: `${currentFlow.name} has been validated and saved successfully.`,
-      });
-      
-      console.log('✅ Flow saved successfully, redirecting to flows list...');
-      
-      // Redirect to flow list page
-      navigate('/flows');
-      
+      updateCurrentFlow();
     } catch (error) {
-      console.error('❌ Error saving flow:', error);
+      console.error('Error saving flow:', error);
       toast({
         title: "Save Error",
-        description: "Failed to save flow. Please try again.",
+        description: "Failed to save flow.",
         variant: "destructive"
       });
-    }
-  };
-
-  // Handle node deletion
-  const handleDeleteNode = async (nodeId: string) => {
-    const flowNodeId = flowNodeMap.get(nodeId);
-    if (flowNodeId) {
-      try {
-        await flowService.deleteFlowNode(flowNodeId);
-        setNodes((nds) => nds.filter(node => node.id !== nodeId));
-        setFlowNodeMap(prev => {
-          const newMap = new Map(prev);
-          newMap.delete(nodeId);
-          return newMap;
-        });
-        toast({
-          title: "Node Removed",
-          description: "Node has been removed from the flow.",
-        });
-      } catch (error) {
-        console.error('Error deleting node:', error);
-        toast({
-          title: "Delete Error",
-          description: "Failed to remove node from flow.",
-          variant: "destructive"
-        });
-      }
     }
   };
 
@@ -996,8 +967,7 @@ export function FlowEditor() {
               Flow Creator - {currentFlow.name}
             </div>
             <div className="flex gap-2">
-              <Button onClick={saveFlow} variant="default">
-                <Save className="w-4 h-4 mr-2" />
+              <Button onClick={saveFlow} variant="outline">
                 Save Flow
               </Button>
               <Button 
@@ -1046,8 +1016,6 @@ export function FlowEditor() {
                      snapGrid={[15, 15]}
                      deleteKeyCode={['Backspace', 'Delete']}
                      multiSelectionKeyCode={'Shift'}
-                     onNodeClick={(_, node) => setSelectedNode(node)}
-                     onPaneClick={() => setSelectedNode(null)}
                    >
                     <Controls className="bg-background border-border text-foreground" />
                     <MiniMap className="bg-background border-border" />
