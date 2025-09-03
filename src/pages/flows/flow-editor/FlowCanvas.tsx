@@ -106,8 +106,9 @@ export function FlowCanvas({ selectedNodeType, onNodeSelect, selectedNode, flowI
   }, [setNodes]);
 
   // Helper function to determine node type based on name or other criteria
-  const determineNodeType = (nodeName: string): string => {
-    const name = nodeName.toLowerCase();
+  const determineNodeType = (nodeName?: string): string => {
+    const name = (nodeName ?? '').toLowerCase();
+    if (!name) return 'sftp_collector'; // default fallback when name is missing
     if (name.includes('sftp') || name.includes('collector')) return 'sftp_collector';
     if (name.includes('fdc')) return 'fdc';
     if (name.includes('asn1') || name.includes('decoder')) return 'asn1_decoder';

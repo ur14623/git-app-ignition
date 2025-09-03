@@ -21,8 +21,9 @@ interface NodePaletteProps {
 }
 
 // Icon mapping for different node types
-const getNodeIcon = (nodeName: string) => {
-  const name = nodeName.toLowerCase();
+const getNodeIcon = (nodeName?: string) => {
+  const name = (nodeName ?? '').toLowerCase();
+  if (!name) return Activity;
   if (name.includes('sftp') || name.includes('collector')) return Database;
   if (name.includes('fdc')) return CheckCircle;
   if (name.includes('asn1') || name.includes('decoder')) return Activity;
@@ -36,8 +37,9 @@ const getNodeIcon = (nodeName: string) => {
 };
 
 // Color mapping for different node types
-const getNodeColor = (nodeName: string) => {
-  const name = nodeName.toLowerCase();
+const getNodeColor = (nodeName?: string) => {
+  const name = (nodeName ?? '').toLowerCase();
+  if (!name) return 'bg-blue-500';
   if (name.includes('sftp') || name.includes('collector')) return 'bg-blue-500';
   if (name.includes('fdc')) return 'bg-green-500';
   if (name.includes('asn1') || name.includes('decoder')) return 'bg-purple-500';
