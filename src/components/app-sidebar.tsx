@@ -56,26 +56,17 @@ const mediationInstances = [
   { 
     title: "Charging Gateway Mediation", 
     icon: Server, 
-    flows: [
-      { id: "1", name: "Charging Stream A", url: "/mediations/charging/flow/1" },
-      { id: "2", name: "Charging Stream B", url: "/mediations/charging/flow/2" }
-    ]
+    url: "/mediations/charging"
   },
   { 
     title: "Convergent Mediation", 
     icon: Server, 
-    flows: [
-      { id: "3", name: "Convergent Stream A", url: "/mediations/convergent/flow/3" },
-      { id: "4", name: "Convergent Stream B", url: "/mediations/convergent/flow/4" }
-    ]
+    url: "/mediations/convergent"
   },
   { 
     title: "NCC Mediation", 
     icon: Server, 
-    flows: [
-      { id: "5", name: "NCC Stream A", url: "/mediations/ncc/flow/5" },
-      { id: "6", name: "NCC Stream B", url: "/mediations/ncc/flow/6" }
-    ]
+    url: "/mediations/ncc"
   }
 ];
 
@@ -85,7 +76,6 @@ export function AppSidebar() {
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
   const { setCurrentSection } = useSection();
-  const [expandedMediations, setExpandedMediations] = useState<string[]>([]);
 
   const isActive = (path: string) => {
     if (path === "/") {
@@ -101,18 +91,6 @@ export function AppSidebar() {
 
   const handleSectionClick = (title: string) => {
     setCurrentSection(title);
-  };
-
-  const toggleMediationExpansion = (mediationTitle: string) => {
-    setExpandedMediations(prev => 
-      prev.includes(mediationTitle) 
-        ? prev.filter(title => title !== mediationTitle)
-        : [...prev, mediationTitle]
-    );
-  };
-
-  const isMediationExpanded = (mediationTitle: string) => {
-    return expandedMediations.includes(mediationTitle);
   };
 
   return (
@@ -143,39 +121,16 @@ export function AppSidebar() {
             <SidebarMenu>
               {mediationInstances.map((mediation) => (
                 <SidebarMenuItem key={mediation.title}>
-                  <SidebarMenuButton
-                    onClick={() => toggleMediationExpansion(mediation.title)}
-                    className="w-full justify-between"
-                  >
-                    <div className="flex items-center">
+                  <SidebarMenuButton asChild>
+                    <NavLink 
+                      to={mediation.url} 
+                      className={getNavClasses(mediation.url)}
+                      onClick={() => handleSectionClick(mediation.title)}
+                    >
                       <mediation.icon className="h-4 w-4" />
-                      {!collapsed && <span className="ml-2">{mediation.title}</span>}
-                    </div>
-                    {!collapsed && (
-                      <ChevronRight 
-                        className={`h-4 w-4 transition-transform duration-200 ${
-                          isMediationExpanded(mediation.title) ? "rotate-90" : ""
-                        }`}
-                      />
-                    )}
+                      {!collapsed && <span>{mediation.title}</span>}
+                    </NavLink>
                   </SidebarMenuButton>
-                  
-                  {!collapsed && isMediationExpanded(mediation.title) && (
-                    <div className="ml-6 mt-1 space-y-1">
-                      {mediation.flows.map((flow) => (
-                        <SidebarMenuButton key={flow.id} asChild size="sm">
-                          <NavLink 
-                            to={flow.url} 
-                            className={getNavClasses(flow.url)}
-                            onClick={() => handleSectionClick(flow.name)}
-                          >
-                            <Workflow className="h-3 w-3" />
-                            <span className="ml-2 text-sm">{flow.name}</span>
-                          </NavLink>
-                        </SidebarMenuButton>
-                      ))}
-                    </div>
-                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
