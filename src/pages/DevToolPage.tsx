@@ -31,11 +31,19 @@ import { CloneFlowDialog } from "@/pages/flows/clone-flow-dialog";
 import { useSubnodes, subnodeService } from "@/services/subnodeService";
 import { parameterService } from "@/services/parameterService";
 import { LoadingCard } from "@/components/ui/loading";
+import { useSection } from "@/contexts/SectionContext";
 import axios from "axios";
 
 export function DevToolPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { setCurrentSection, setStatusCounts } = useSection();
+
+  // Set section context for DevTool page
+  useEffect(() => {
+    setCurrentSection("Development Tools");
+    setStatusCounts({ total: 0, deployed: 0, drafted: 0 }); // Hide status counts
+  }, [setCurrentSection, setStatusCounts]);
   
   // Display limits state
   const [displayLimits, setDisplayLimits] = useState<{[key: string]: number}>({
@@ -667,14 +675,7 @@ export function DevToolPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto max-w-7xl p-6 space-y-8">
-        {/* Professional Header */}
-        <div className="border-b border-border pb-6">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Development Tools
-          </h1>
-        </div>
-
+      <div className="w-full p-6 space-y-8">
         {/* Professional Tabs */}
         <div className="bg-card border border-border rounded-lg shadow-sm">
           <Tabs defaultValue="flows" className="w-full">
