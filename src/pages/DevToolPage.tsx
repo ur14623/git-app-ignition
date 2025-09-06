@@ -175,6 +175,14 @@ export function DevToolPage() {
                       variant="ghost" 
                       size="sm" 
                       className="h-8 w-8 p-0" 
+                      onClick={() => navigate(`/flows/${flow.id}`)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0" 
                       onClick={() => navigate(`/flows/${flow.id}/edit`)}
                     >
                       <Settings className="h-4 w-4" />
@@ -269,6 +277,14 @@ export function DevToolPage() {
                 </TableCell>
                 <TableCell className="px-6 py-4">
                   <div className="flex items-center justify-end gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0" 
+                      onClick={() => navigate(`/nodes/${node.id}`)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
                     <Button 
                       variant="ghost" 
                       size="sm" 
@@ -370,6 +386,14 @@ export function DevToolPage() {
                       variant="ghost" 
                       size="sm" 
                       className="h-8 w-8 p-0" 
+                      onClick={() => navigate(`/subnodes/${subnode.id}`)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0" 
                       onClick={() => navigate(`/subnodes/${subnode.id}/edit`)}
                     >
                       <Settings className="h-4 w-4" />
@@ -467,6 +491,14 @@ export function DevToolPage() {
                 </TableCell>
                 <TableCell className="px-6 py-4">
                   <div className="flex items-center justify-end gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0" 
+                      onClick={() => navigate(`/parameters/${param.id}`)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
                     <Button 
                       variant="ghost" 
                       size="sm" 
