@@ -3,408 +3,460 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
-  Activity, 
   AlertTriangle, 
   CheckCircle, 
   Clock, 
-  Database, 
-  GitFork, 
-  Network, 
-  Plus, 
-  Settings, 
-  TrendingUp, 
-  Users, 
-  Workflow,
-  Zap,
-  BarChart3,
-  PieChart,
   Monitor,
-  Server
+  RefreshCw,
+  Bell,
+  ArrowUp,
+  ArrowDown,
+  Pause,
+  Play,
+  Square,
+  AlertCircle,
+  FileText,
+  EyeOff,
+  StickyNote,
+  Info,
+  Zap,
+  TrendingUp
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useItems } from './apis/ItemService';
 
-const stats = [
+// Stream Data - Professional Mediation Dashboard
+const streamsData = [
   {
-    title: "Active Flows",
-    value: "12",
-    change: "+2.1%",
-    trend: "up",
-    icon: Workflow,
-    color: "text-primary",
-    bgColor: "bg-primary/10",
-    total: "24 Total"
+    id: "stream-001",
+    name: "SFC_ETH_6D_BSS_TO_NOKIA_DWH_STREAM",
+    errors: 22067,
+    warnings: 0,
+    instances: 1,
+    status: "RUNNING",
+    uptime: "14d 8h 23m",
+    lastActivity: "2 seconds ago",
+    throughput: "3.2K/sec"
   },
   {
-    title: "Running Processes",
-    value: "8",
-    change: "+12%",
-    trend: "up", 
-    icon: Activity,
-    color: "text-success",
-    bgColor: "bg-success/10",
-    total: "16 Total"
+    id: "stream-002", 
+    name: "SFC_ETH_COLLAB_TO_DWH_STREAM",
+    errors: 0,
+    warnings: 12,
+    instances: 1,
+    status: "STOPPED",
+    uptime: "0h",
+    lastActivity: "45 minutes ago",
+    throughput: "0/sec"
   },
   {
-    title: "System Health",
-    value: "99.2%",
-    change: "+0.3%",
-    trend: "up",
-    icon: Monitor,
-    color: "text-info",  
-    bgColor: "bg-info/10",
-    total: "Uptime"
+    id: "stream-003",
+    name: "BILLING_MEDIATION_CORE_STREAM",
+    errors: 156,
+    warnings: 89,
+    instances: 1,
+    status: "PARTIAL",
+    uptime: "6d 12h 45m",
+    lastActivity: "1 second ago",
+    throughput: "1.8K/sec"
   },
   {
-    title: "Data Processed",
-    value: "2.4TB",
-    change: "+18%",
-    trend: "up",
-    icon: Database,
-    color: "text-warning",
-    bgColor: "bg-warning/10", 
-    total: "This Month"
+    id: "stream-004",
+    name: "CDR_PROCESSING_MAIN_STREAM",
+    errors: 8,
+    warnings: 156,
+    instances: 1,
+    status: "RUNNING",
+    uptime: "22d 3h 12m",
+    lastActivity: "1 second ago",
+    throughput: "5.6K/sec"
+  },
+  {
+    id: "stream-005",
+    name: "NETWORK_EVENTS_COLLECTOR_STREAM",
+    errors: 0,
+    warnings: 3,
+    instances: 1,
+    status: "RUNNING",
+    uptime: "8d 15h 32m",
+    lastActivity: "3 seconds ago",
+    throughput: "2.1K/sec"
   }
 ];
 
-const recentActivities = [
+// Alerts Summary
+const alertsSummary = {
+  totalErrors: 22088,
+  totalWarnings: 237,
+  totalInfo: 72
+};
+
+// Peak Streams (highest activity)
+const peakStreams = [
   {
-    id: 1,
-    type: "flow_deployed",
-    title: "ETL Pipeline deployed",
-    description: "Customer data processing flow is now live",
-    timestamp: "2 minutes ago",
-    status: "success",
-    icon: CheckCircle
+    name: "CDR_PROCESSING_MAIN_STREAM",
+    throughput: "5.6K/sec",
+    uptime: "22d 3h",
+    errorRate: "0.02%"
   },
   {
-    id: 2, 
-    type: "node_updated",
-    title: "SftpCollector node updated",
-    description: "Version 2.1 deployed with performance improvements",
-    timestamp: "15 minutes ago", 
-    status: "info",
-    icon: Network
+    name: "SFC_ETH_6D_BSS_TO_NOKIA_DWH_STREAM", 
+    throughput: "3.2K/sec",
+    uptime: "14d 8h",
+    errorRate: "1.2%"
+  },
+  {
+    name: "NETWORK_EVENTS_COLLECTOR_STREAM",
+    throughput: "2.1K/sec", 
+    uptime: "8d 15h",
+    errorRate: "0.01%"
+  }
+];
+
+// Mock Flow Data
+const flowsData = [
+  {
+    id: "flow-001",
+    name: "Customer Data ETL",
+    status: "running",
+    health: "healthy",
+    throughput: 3420,
+    queueSize: 125,
+    errorCount: 0,
+    latency: 89,
+    slaCompliance: 99.8,
+    lastUpdated: "2024-01-15T10:30:00Z",
+    nodes: 6,
+    uptime: "14d 8h"
+  },
+  {
+    id: "flow-002", 
+    name: "Billing Mediation",
+    status: "running",
+    health: "degraded",
+    throughput: 2180,
+    queueSize: 892,
+    errorCount: 12,
+    latency: 245,
+    slaCompliance: 94.2,
+    lastUpdated: "2024-01-15T10:29:45Z",
+    nodes: 8,
+    uptime: "6d 12h"
+  },
+  {
+    id: "flow-003",
+    name: "Network Events",
+    status: "running", 
+    health: "healthy",
+    throughput: 5680,
+    queueSize: 45,
+    errorCount: 2,
+    latency: 156,
+    slaCompliance: 98.9,
+    lastUpdated: "2024-01-15T10:30:15Z",
+    nodes: 4,
+    uptime: "22d 3h"
+  },
+  {
+    id: "flow-004",
+    name: "CDR Processing",
+    status: "stopped",
+    health: "failed",
+    throughput: 0,
+    queueSize: 0,
+    errorCount: 45,
+    latency: 0,
+    slaCompliance: 0,
+    lastUpdated: "2024-01-15T09:15:22Z",
+    nodes: 5,
+    uptime: "0h"
+  }
+];
+
+// Mock Node Data
+const nodesData = [
+  {
+    id: "node-001",
+    name: "SftpCollector-01",
+    type: "Collector",
+    status: "active",
+    inputRate: 1240,
+    outputRate: 1238,
+    queueSize: 15,
+    latency: 45,
+    errorCount: 2,
+    flowId: "flow-001"
+  },
+  {
+    id: "node-002", 
+    name: "ValidationBLN-01",
+    type: "Validator",
+    status: "active",
+    inputRate: 1238,
+    outputRate: 1235,
+    queueSize: 8,
+    latency: 12,
+    errorCount: 3,
+    flowId: "flow-001"
+  },
+  {
+    id: "node-003",
+    name: "EnrichmentBLN-01", 
+    type: "Enricher",
+    status: "degraded",
+    inputRate: 2180,
+    outputRate: 2168,
+    queueSize: 245,
+    latency: 156,
+    errorCount: 12,
+    flowId: "flow-002"
+  }
+];
+
+// Performance Chart Data
+const performanceData = [
+  { time: '00:00', throughput: 8500, latency: 120, errors: 15 },
+  { time: '02:00', throughput: 7200, latency: 118, errors: 12 },
+  { time: '04:00', throughput: 6800, latency: 115, errors: 8 },
+  { time: '06:00', throughput: 9200, latency: 125, errors: 18 },
+  { time: '08:00', throughput: 12400, latency: 142, errors: 22 },
+  { time: '10:00', throughput: 11800, latency: 138, errors: 19 },
+  { time: '12:00', throughput: 13200, latency: 155, errors: 25 },
+  { time: '14:00', throughput: 12800, latency: 148, errors: 21 },
+  { time: '16:00', throughput: 14500, latency: 162, errors: 28 },
+  { time: '18:00', throughput: 13900, latency: 159, errors: 24 },
+  { time: '20:00', throughput: 11200, latency: 145, errors: 16 },
+  { time: '22:00', throughput: 9800, latency: 132, errors: 13 }
+];
+
+// Alert Data
+const alertsData = [
+  {
+    id: 1,
+    type: "critical",
+    title: "Flow CDR Processing Stopped",
+    description: "Flow has been down for 45 minutes due to database connection failure",
+    timestamp: "2024-01-15T09:15:22Z",
+    flowId: "flow-004",
+    acknowledged: false
+  },
+  {
+    id: 2,
+    type: "warning", 
+    title: "High Queue Backlog in Billing Mediation",
+    description: "Queue size has exceeded threshold (800+ messages)",
+    timestamp: "2024-01-15T10:20:15Z",
+    flowId: "flow-002",
+    acknowledged: false
   },
   {
     id: 3,
-    type: "alert",
-    title: "High memory usage detected", 
-    description: "Node validation-processor using 85% memory",
-    timestamp: "1 hour ago",
-    status: "warning", 
-    icon: AlertTriangle
-  },
-  {
-    id: 4,
-    type: "flow_created",
-    title: "New flow created",
-    description: "Data enrichment pipeline added to system",
-    timestamp: "3 hours ago",
-    status: "success",
-    icon: Plus
+    type: "info",
+    title: "Scheduled Maintenance Complete",
+    description: "Network Events flow maintenance completed successfully",
+    timestamp: "2024-01-15T08:30:00Z", 
+    flowId: "flow-003",
+    acknowledged: true
   }
 ];
 
-const quickActions = [
-  {
-    title: "Create Flow",
-    description: "Build a new data processing pipeline",
-    icon: Workflow,
-    color: "text-primary",
-    bgColor: "bg-primary/10",
-    route: "/flows",
-    action: "create"
-  },
-  {
-    title: "Monitor System",
-    description: "View real-time performance metrics",
-    icon: BarChart3,
-    color: "text-info",
-    bgColor: "bg-info/10", 
-    route: "/reports/flows"
-  },
-  {
-    title: "Manage Nodes",
-    description: "Configure and deploy processing nodes",
-    icon: Network,
-    color: "text-success",
-    bgColor: "bg-success/10",
-    route: "/nodes"
-  },
-  {
-    title: "View Alerts",
-    description: "Check system notifications and issues",
-    icon: AlertTriangle,
-    color: "text-warning", 
-    bgColor: "bg-warning/10",
-    route: "/alerts/flows"
-  }
-];
+const COLORS = ['hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--destructive))', 'hsl(var(--muted))'];
+
 
 export function DashboardPage() {
   const navigate = useNavigate();
-  const { data: flows } = useItems();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  const getStatusIcon = (status: string) => {
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setRefreshing(false);
+  };
+
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case "success": return <CheckCircle className="h-4 w-4 text-success" />;
-      case "warning": return <AlertTriangle className="h-4 w-4 text-warning" />;
-      case "info": return <Network className="h-4 w-4 text-info" />;
-      default: return <Activity className="h-4 w-4 text-muted-foreground" />;
+      case "RUNNING": return "text-success";
+      case "PARTIAL": return "text-warning";
+      case "STOPPED": return "text-muted-foreground";
+      default: return "text-muted-foreground";
     }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const variant = status === "RUNNING" ? "default" :
+                   status === "PARTIAL" ? "secondary" : 
+                   "destructive";
+    
+    return (
+      <Badge variant={variant} className="text-xs font-medium">
+        {status}
+      </Badge>
+    );
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="space-y-8 p-6">
-        {/* Header */}
+      <div className="space-y-6 p-6">
+        {/* Dashboard Header */}
         <div className="relative">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary-glow/5 rounded-2xl" />
-          <div className="relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-8 shadow-card">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-              <div className="space-y-3">
+          <div className="relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 shadow-card">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div className="space-y-2">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-primary/10 rounded-lg">
-                    <Zap className="h-6 w-6 text-primary" />
+                    <Monitor className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-                      Flow Orchestrator Dashboard
+                    <h1 className="text-2xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+                      Stream Monitoring Dashboard
                     </h1>
-                    <p className="text-muted-foreground">
-                      Welcome back! Here's what's happening with your data pipelines.
+                    <p className="text-sm text-muted-foreground">
+                      Real-time monitoring and control of mediation streams
                     </p>
                   </div>
                 </div>
               </div>
-              <div className="flex flex-col items-end gap-2">
-                <div className="text-sm font-medium text-foreground">
-                  {currentTime.toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
-                </div>
-                <div className="text-2xl font-bold text-primary">
-                  {currentTime.toLocaleTimeString('en-US', { 
-                    hour12: false 
-                  })}
+              
+              {/* Dashboard Controls - Removed as requested */}
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                  className="h-9"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+                <div className="flex flex-col items-end gap-1 ml-4">
+                  <div className="text-xs text-muted-foreground">
+                    {currentTime.toLocaleDateString()}
+                  </div>
+                  <div className="text-sm font-bold text-primary">
+                    {currentTime.toLocaleTimeString('en-US', { hour12: false })}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat, index) => (
-            <Card 
-              key={stat.title}
-              className="group bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/30 shadow-subtle hover:shadow-card transition-all duration-300 hover:scale-105 animate-fade-in"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                  {stat.title}
-                </CardTitle>
-                <div className={`p-2 rounded-lg ${stat.bgColor} group-hover:scale-110 transition-transform duration-300`}>
-                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
+        {/* Alerts Summary */}
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card className="bg-destructive/5 border-destructive/20 shadow-subtle">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-destructive/10 rounded-lg">
+                  <AlertCircle className="h-5 w-5 text-destructive" />
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-baseline gap-2">
-                  <div className="text-3xl font-bold text-foreground group-hover:text-primary transition-colors">
-                    {stat.value}
+                <div>
+                  <div className="text-2xl font-bold text-destructive">
+                    {alertsSummary.totalErrors.toLocaleString()}
                   </div>
-                  <Badge 
-                    variant="outline" 
-                    className={`text-xs ${stat.trend === 'up' ? 'text-success border-success/30' : 'text-destructive border-destructive/30'}`}
-                  >
-                    {stat.change}
-                  </Badge>
+                  <div className="text-sm text-muted-foreground">Total Errors</div>
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  {stat.total}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-warning/5 border-warning/20 shadow-subtle">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-warning/10 rounded-lg">
+                  <AlertTriangle className="h-5 w-5 text-warning" />
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+                <div>
+                  <div className="text-2xl font-bold text-warning">
+                    {alertsSummary.totalWarnings}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Total Warnings</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-info/5 border-info/20 shadow-subtle">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-info/10 rounded-lg">
+                  <Info className="h-5 w-5 text-info" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-info">
+                    {alertsSummary.totalInfo}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Info Messages</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* System Status */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-subtle">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Monitor className="h-5 w-5 text-primary" />
-                  System Status
-                </CardTitle>
-                <CardDescription>Real-time performance overview</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="font-medium">CPU Usage</span>
-                      <span className="text-muted-foreground">34%</span>
-                    </div>
-                    <Progress value={34} className="h-2" />
+        {/* Streams Table */}
+        <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-subtle">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Monitor className="h-5 w-5 text-primary" />
+              Monitored Streams
+            </CardTitle>
+            <CardDescription>Real-time status of all active data streams</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {/* Table Header */}
+              <div className="grid grid-cols-6 gap-4 text-sm font-medium text-muted-foreground pb-2 border-b">
+                <div className="col-span-2">Stream Name</div>
+                <div>Errors / Warnings</div>
+                <div>Instances</div>
+                <div>Status</div>
+                <div>Throughput</div>
+              </div>
+              
+              {/* Stream Rows */}
+              {streamsData.map((stream) => (
+                <div 
+                  key={stream.id} 
+                  className="grid grid-cols-6 gap-4 items-center py-3 border-b border-border/50 hover:bg-muted/30 transition-colors cursor-pointer"
+                  onClick={() => navigate(`/streams/${stream.id}`)}
+                >
+                  <div className="col-span-2 font-medium text-foreground">
+                    {stream.name}
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="font-medium">Memory Usage</span>
-                      <span className="text-muted-foreground">67%</span>
-                    </div>
-                    <Progress value={67} className="h-2" />
+                  <div className="flex items-center gap-2">
+                    <span className={`font-medium ${stream.errors > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                      {stream.errors.toLocaleString()}
+                    </span>
+                    <span className="text-muted-foreground">/</span>
+                    <span className={`font-medium ${stream.warnings > 0 ? 'text-warning' : 'text-muted-foreground'}`}>
+                      {stream.warnings}
+                    </span>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="font-medium">Storage Usage</span>
-                      <span className="text-muted-foreground">45%</span>
-                    </div>
-                    <Progress value={45} className="h-2" />
+                  <div className="text-muted-foreground">
+                    {stream.instances}
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="font-medium">Network I/O</span>
-                      <span className="text-muted-foreground">23%</span>
-                    </div>
-                    <Progress value={23} className="h-2" />
+                  <div>
+                    {getStatusBadge(stream.status)}
                   </div>
-                </div>
-                
-                <div className="pt-4 border-t border-border/50">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-success rounded-full animate-pulse"></div>
-                      <span className="text-sm font-medium">All Systems Operational</span>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => navigate("/reports/flows")}>
-                      View Details
-                    </Button>
+                  <div className="font-medium">
+                    {stream.throughput}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-            {/* Recent Activity */}
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-subtle">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5 text-primary" />
-                  Recent Activity
-                </CardTitle>
-                <CardDescription>Latest system events and updates</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {recentActivities.map((activity) => (
-                    <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
-                      <div className="mt-1">
-                        {getStatusIcon(activity.status)}
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <div className="font-medium text-sm text-foreground">
-                          {activity.title}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {activity.description}
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          {activity.timestamp}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="space-y-6">
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-subtle">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-primary" />
-                  Quick Actions
-                </CardTitle>
-                <CardDescription>Common tasks and shortcuts</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {quickActions.map((action, index) => (
-                  <Button
-                    key={action.title}
-                    variant="outline"
-                    className="w-full justify-start h-auto p-4 border-border/50 hover:border-primary/30 hover:bg-primary/5 transition-all duration-300 animate-fade-in"
-                    style={{ animationDelay: `${(index + 4) * 150}ms` }}
-                    onClick={() => navigate(action.route)}
-                  >
-                    <div className={`p-2 rounded-lg ${action.bgColor} mr-3`}>
-                      <action.icon className={`h-4 w-4 ${action.color}`} />
-                    </div>
-                    <div className="text-left">
-                      <div className="font-medium text-sm">{action.title}</div>
-                      <div className="text-xs text-muted-foreground">{action.description}</div>
-                    </div>
-                  </Button>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* System Overview */}
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-subtle">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <PieChart className="h-5 w-5 text-primary" />
-                  System Overview
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-center">
-                  <div className="space-y-1">
-                    <div className="text-2xl font-bold text-primary">24</div>
-                    <div className="text-xs text-muted-foreground uppercase tracking-wide">Total Flows</div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-2xl font-bold text-success">48</div>
-                    <div className="text-xs text-muted-foreground uppercase tracking-wide">Nodes</div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-2xl font-bold text-info">96</div>
-                    <div className="text-xs text-muted-foreground uppercase tracking-wide">Subnodes</div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-2xl font-bold text-warning">124</div>
-                    <div className="text-xs text-muted-foreground uppercase tracking-wide">Parameters</div>
-                  </div>
-                </div>
-                
-                <div className="pt-4 border-t border-border/50">
-                  <Button 
-                    variant="outline" 
-                    className="w-full border-primary/20 hover:bg-primary/5"
-                    onClick={() => navigate("/flows")}
-                  >
-                    View All Flows
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        {/* Peak Performance Streams section removed as requested */}
       </div>
     </div>
   );
