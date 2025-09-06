@@ -742,14 +742,9 @@ export function DevToolPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        {renderViewControls('flows', flows.length)}
+                        {renderViewControls("flows", flows.length)}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        Total: {flows.length} flows
-                      </div>
-                    </div>
                     
                     <div className="border border-border rounded-lg bg-card">
                       {renderFlowsList(getDisplayedItems(flows, 'flows'))}
@@ -790,14 +785,9 @@ export function DevToolPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        {renderViewControls('nodes', nodes.length)}
+                        {renderViewControls("nodes", nodes.length)}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        Total: {nodes.length} nodes
-                      </div>
-                    </div>
                     
                     <div className="border border-border rounded-lg bg-card">
                       {renderNodesList(getDisplayedItems(nodes, 'nodes'))}
@@ -838,14 +828,9 @@ export function DevToolPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        {renderViewControls('subnodes', (subnodesData?.results || []).length)}
+                        {renderViewControls("subnodes", (subnodesData?.results || []).length)}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        Total: {(subnodesData?.results || []).length} subnodes
-                      </div>
-                    </div>
                     
                     <div className="border border-border rounded-lg bg-card">
                       {renderSubnodesList(getDisplayedItems((subnodesData?.results || []), 'subnodes'))}
@@ -886,14 +871,9 @@ export function DevToolPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        {renderViewControls('parameters', parameters.length)}
+                        {renderViewControls("parameters", parameters.length)}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        Total: {parameters.length} parameters
-                      </div>
-                    </div>
                     
                     <div className="border border-border rounded-lg bg-card">
                       {renderParametersList(getDisplayedItems(parameters, 'parameters'))}
