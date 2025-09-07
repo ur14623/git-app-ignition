@@ -64,7 +64,7 @@ export function GeneralInfoPanel({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Status and Uptime */}
+        {/* Status and Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-muted-foreground">Status</label>
@@ -80,15 +80,15 @@ export function GeneralInfoPanel({
               <span className="text-sm font-mono">{uptime}</span>
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <label className="text-sm font-medium text-muted-foreground">Last Started</label>
-            <p className="text-sm font-mono">{lastStartTimestamp}</p>
+            <p className="text-sm font-mono">2024-01-12 23:15:30</p>
           </div>
           
           <div className="space-y-2">
             <label className="text-sm font-medium text-muted-foreground">Host Count</label>
-            <p className="text-sm font-semibold">{hosts.length} hosts</p>
+            <p className="text-sm font-semibold">2 hosts</p>
           </div>
         </div>
 
@@ -116,11 +116,11 @@ export function GeneralInfoPanel({
           <div className="flex items-center gap-4 text-sm">
             <div>
               <span className="text-muted-foreground">Current: </span>
-              <span className="font-mono font-medium">{currentRevision}</span>
+              <span className="font-mono font-medium">v2</span>
             </div>
             <div>
               <span className="text-muted-foreground">Based on: </span>
-              <span className="font-mono font-medium">{baseRevision}</span>
+              <span className="font-mono font-medium">v1</span>
             </div>
             <Button variant="link" size="sm" className="h-auto p-0 text-primary">
               Compare versions

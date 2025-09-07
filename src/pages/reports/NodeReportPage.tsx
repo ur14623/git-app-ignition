@@ -129,7 +129,7 @@ export function NodeReportPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="metric-card hover-scale animate-fade-in">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-2xl shadow-subtle">
+            <div className="p-3 bg-primary/10">
               <Server className="h-6 w-6 text-primary" />
             </div>
             <div className="space-y-1">
@@ -142,7 +142,7 @@ export function NodeReportPage() {
 
         <div className="metric-card hover-scale animate-fade-in" style={{ animationDelay: '100ms' }}>
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-success/10 rounded-2xl shadow-subtle">
+            <div className="p-3 bg-success/10">
               <CheckCircle className="h-6 w-6 text-success" />
             </div>
             <div className="space-y-1">
@@ -155,7 +155,7 @@ export function NodeReportPage() {
 
         <div className="metric-card hover-scale animate-fade-in" style={{ animationDelay: '200ms' }}>
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-info/10 rounded-2xl shadow-subtle">
+            <div className="p-3 bg-info/10">
               <BarChart3 className="h-6 w-6 text-info" />
             </div>
             <div className="space-y-1">
@@ -168,7 +168,7 @@ export function NodeReportPage() {
 
         <div className="metric-card hover-scale animate-fade-in" style={{ animationDelay: '300ms' }}>
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-muted/10 rounded-2xl shadow-subtle">
+            <div className="p-3 bg-muted/10">
               <Cpu className="h-6 w-6 text-muted-foreground" />
             </div>
             <div className="space-y-1">
@@ -181,11 +181,11 @@ export function NodeReportPage() {
       </div>
 
       {/* Professional Filters Section */}
-      <div className="professional-card p-8 rounded-3xl animate-slide-up">
+      <div className="professional-card p-8 animate-slide-up">
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
             <Select defaultValue="all">
-              <SelectTrigger className="w-48 h-12 bg-background/80 border-border/60 rounded-xl shadow-subtle">
+              <SelectTrigger className="w-48 h-12 bg-background/80 border-border/60">
                 <SelectValue placeholder="Node Status" />
               </SelectTrigger>
               <SelectContent>
@@ -196,7 +196,7 @@ export function NodeReportPage() {
               </SelectContent>
             </Select>
             <Select defaultValue="all-types">
-              <SelectTrigger className="w-48 h-12 bg-background/80 border-border/60 rounded-xl shadow-subtle">
+              <SelectTrigger className="w-48 h-12 bg-background/80 border-border/60">
                 <SelectValue placeholder="Node Type" />
               </SelectTrigger>
               <SelectContent>
@@ -212,10 +212,10 @@ export function NodeReportPage() {
       </div>
 
       {/* Professional Node Table */}
-      <div className="professional-card rounded-3xl overflow-hidden animate-scale-in">
+      <div className="professional-card overflow-hidden animate-scale-in">
         <div className="p-8 border-b border-border/40">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-primary/10 rounded-2xl">
+            <div className="p-3 bg-primary/10">
               <Database className="h-6 w-6 text-primary" />
             </div>
             <div>

@@ -183,14 +183,6 @@ export function DevToolPage() {
                       variant="ghost" 
                       size="sm" 
                       className="h-8 w-8 p-0" 
-                      onClick={() => navigate(`/flows/${flow.id}/edit`)}
-                    >
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 w-8 p-0" 
                       onClick={() => handleExportFlow(flow)}
                     >
                       <Download className="h-4 w-4" />
@@ -284,14 +276,6 @@ export function DevToolPage() {
                       onClick={() => navigate(`/nodes/${node.id}`)}
                     >
                       <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 w-8 p-0" 
-                      onClick={() => navigate(`/nodes/${node.id}/edit`)}
-                    >
-                      <Settings className="h-4 w-4" />
                     </Button>
                     <Button 
                       variant="ghost" 
@@ -394,14 +378,6 @@ export function DevToolPage() {
                       variant="ghost" 
                       size="sm" 
                       className="h-8 w-8 p-0" 
-                      onClick={() => navigate(`/subnodes/${subnode.id}/edit`)}
-                    >
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 w-8 p-0" 
                       onClick={() => handleExportSubnode(subnode)}
                     >
                       <Download className="h-4 w-4" />
@@ -498,14 +474,6 @@ export function DevToolPage() {
                       onClick={() => navigate(`/parameters/${param.id}`)}
                     >
                       <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 w-8 p-0" 
-                      onClick={() => navigate(`/parameters/${param.id}/edit`)}
-                    >
-                      <Settings className="h-4 w-4" />
                     </Button>
                     <Button 
                       variant="ghost" 

@@ -17,8 +17,6 @@ import {
   Play, 
   Pause, 
   RotateCcw, 
-  EyeOff, 
-  StickyNote,
   Clock,
   Server,
   GitBranch,
@@ -38,6 +36,8 @@ import {
   FileText,
   Download
 } from "lucide-react";
+import { PerformanceStats } from "@/pages/mediations/components/PerformanceStats";
+import { AlertsLogsPanel } from "@/pages/mediations/components/AlertsLogsPanel";
 
 // Mock data for the stream
 const streamData = {
@@ -62,7 +62,8 @@ const nodesData = [
     processed: 45672, 
     errors: 12, 
     host: "mediation-host-01",
-    position: { x: 100, y: 200 }
+    position: { x: 100, y: 200 },
+    subnodeName: "File_Collector_v2.1"
   },
   { 
     id: "processor-001", 
@@ -73,7 +74,8 @@ const nodesData = [
     processed: 45660, 
     errors: 0, 
     host: "mediation-host-01",
-    position: { x: 300, y: 200 }
+    position: { x: 300, y: 200 },
+    subnodeName: "Field_Validator_v1.5"
   },
   { 
     id: "processor-002", 
@@ -84,7 +86,8 @@ const nodesData = [
     processed: 45350, 
     errors: 310, 
     host: "mediation-host-02",
-    position: { x: 500, y: 200 }
+    position: { x: 500, y: 200 },
+    subnodeName: "Customer_Lookup_v3.0"
   },
   { 
     id: "distributor-001", 
@@ -95,7 +98,8 @@ const nodesData = [
     processed: 45040, 
     errors: 0, 
     host: "mediation-host-02",
-    position: { x: 700, y: 200 }
+    position: { x: 700, y: 200 },
+    subnodeName: "Bulk_Insert_v2.3"
   }
 ];
 
@@ -196,14 +200,6 @@ export function StreamDetailPage() {
                 <RotateCcw className="h-4 w-4" />
                 Restart
               </Button>
-              <Button size="sm" variant="outline" className="gap-2">
-                <EyeOff className="h-4 w-4" />
-                Hide
-              </Button>
-              <Button size="sm" variant="outline" className="gap-2">
-                <StickyNote className="h-4 w-4" />
-                Add Note
-              </Button>
             </div>
           </div>
         </div>
@@ -235,30 +231,31 @@ export function StreamDetailPage() {
                   Uptime
                 </Label>
                 <div className="text-sm font-medium text-foreground">{streamData.uptime}</div>
-                <div className="text-xs text-muted-foreground">Since: {streamData.lastStarted}</div>
               </div>
 
-              {/* Hosts */}
+              {/* Last Started */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-muted-foreground">Last Started</Label>
+                <div className="text-sm font-medium text-foreground">2024-01-12 23:15:30</div>
+              </div>
+
+              {/* Host Count */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
                   <Server className="h-4 w-4" />
-                  Hosts
+                  Host Count
                 </Label>
-                <div className="space-y-1">
-                  {streamData.hosts.map(host => (
-                    <div key={host} className="text-sm font-medium text-foreground">{host}</div>
-                  ))}
-                </div>
+                <div className="text-sm font-medium text-foreground">2 hosts</div>
               </div>
 
-              {/* Version */}
+              {/* Version Information */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-muted-foreground flex items-center gap-1">
                   <GitBranch className="h-4 w-4" />
-                  Version
+                  Version Information
                 </Label>
-                <div className="text-sm font-medium text-foreground">{streamData.currentRevision}</div>
-                <div className="text-xs text-muted-foreground">Based on: {streamData.baseRevision}</div>
+                <div className="text-sm font-medium text-foreground">Current: v2</div>
+                <div className="text-xs text-muted-foreground">Based on: v1</div>
               </div>
             </div>
 
@@ -385,20 +382,24 @@ export function StreamDetailPage() {
           </CardContent>
         </Card>
 
-        {/* Alerts & Performance Tabs */}
-        <Tabs defaultValue="alerts" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="alerts" className="gap-2">
-              <Bell className="h-4 w-4" />
-              Alerts & Logs
+        {/* Stream Monitoring Tabs */}
+        <Tabs defaultValue="stream-live-log" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="stream-live-log" className="gap-2">
+              <FileText className="h-4 w-4" />
+              Stream Live Log
             </TabsTrigger>
-            <TabsTrigger value="performance" className="gap-2">
+            <TabsTrigger value="node-live-log" className="gap-2">
               <Activity className="h-4 w-4" />
-              Performance
+              Node Live Log
             </TabsTrigger>
             <TabsTrigger value="statistics" className="gap-2">
               <TrendingUp className="h-4 w-4" />
               Statistics
+            </TabsTrigger>
+            <TabsTrigger value="alerts-logs" className="gap-2">
+              <Bell className="h-4 w-4" />
+              Alerts & Logs
             </TabsTrigger>
             <TabsTrigger value="settings" className="gap-2">
               <Settings className="h-4 w-4" />
@@ -406,13 +407,16 @@ export function StreamDetailPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="alerts" className="space-y-4">
+          <TabsContent value="stream-live-log" className="space-y-4">
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>Active Alerts</CardTitle>
+                  <CardTitle>Stream Live Log</CardTitle>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline">Acknowledge All</Button>
+                    <Button size="sm" variant="outline">
+                      <Download className="h-4 w-4 mr-2" />
+                      Export
+                    </Button>
                     <Button size="sm" variant="outline">
                       <Filter className="h-4 w-4 mr-2" />
                       Filter
@@ -421,56 +425,70 @@ export function StreamDetailPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {alertsData.map((alert) => (
-                    <Alert key={alert.id} className={alert.type === "ERROR" ? "border-destructive" : alert.type === "WARNING" ? "border-warning" : "border-info"}>
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-3">
-                          {alert.type === "ERROR" && <XCircle className="h-5 w-5 text-destructive mt-0.5" />}
-                          {alert.type === "WARNING" && <AlertTriangle className="h-5 w-5 text-warning mt-0.5" />}
-                          {alert.type === "INFO" && <CheckCircle className="h-5 w-5 text-info mt-0.5" />}
-                          <div>
-                            <AlertDescription className="font-medium">
-                              {alert.message}
-                            </AlertDescription>
-                            <div className="text-xs text-muted-foreground mt-1">
-                              {alert.timestamp}
-                            </div>
-                          </div>
-                        </div>
-                        {!alert.acknowledged && (
-                          <Button size="sm" variant="outline">
-                            Acknowledge
-                          </Button>
-                        )}
-                      </div>
-                    </Alert>
-                  ))}
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  <div className="text-xs text-muted-foreground p-2 border-l-2 border-info">
+                    [2024-01-20 14:25:12] Stream started successfully
+                  </div>
+                  <div className="text-xs text-muted-foreground p-2 border-l-2 border-success">
+                    [2024-01-20 14:25:15] SMS_LMS_Collector: Processing batch 001 (45 records)
+                  </div>
+                  <div className="text-xs text-muted-foreground p-2 border-l-2 border-success">
+                    [2024-01-20 14:25:16] SMS_Validator: Validated 45 records, 0 errors
+                  </div>
+                  <div className="text-xs text-muted-foreground p-2 border-l-2 border-warning">
+                    [2024-01-20 14:25:17] SMS_Enricher: Connection timeout to customer database, retrying...
+                  </div>
+                  <div className="text-xs text-muted-foreground p-2 border-l-2 border-success">
+                    [2024-01-20 14:25:20] SMS_Enricher: Retry successful, enriched 42 records
+                  </div>
+                  <div className="text-xs text-muted-foreground p-2 border-l-2 border-success">
+                    [2024-01-20 14:25:22] DWH_Loader: Loaded 42 records to data warehouse
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="performance" className="space-y-4">
+          <TabsContent value="node-live-log" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Throughput Trends</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Node Live Log</CardTitle>
+                  <div className="flex gap-2">
+                    <Select>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select node" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="collector">SMS_LMS_Collector</SelectItem>
+                        <SelectItem value="validator">SMS_Validator</SelectItem>
+                        <SelectItem value="enricher">SMS_Enricher</SelectItem>
+                        <SelectItem value="loader">DWH_Loader</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button size="sm" variant="outline">
+                      <Download className="h-4 w-4 mr-2" />
+                      Export
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="h-80 flex items-center justify-center bg-muted/20 rounded-lg">
-                  <div className="text-center space-y-2">
-                    <Activity className="h-12 w-12 text-muted-foreground mx-auto" />
-                    <p className="text-muted-foreground">Performance charts will be displayed here</p>
-                    <div className="grid grid-cols-2 gap-4 mt-6 text-sm">
-                      <div>
-                        <div className="font-medium">Current Throughput</div>
-                        <div className="text-2xl font-bold text-primary">3.6K/sec</div>
-                      </div>
-                      <div>
-                        <div className="font-medium">Peak Today</div>
-                        <div className="text-2xl font-bold text-success">5.2K/sec</div>
-                      </div>
-                    </div>
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  <div className="text-xs text-muted-foreground p-2 border-l-2 border-info">
+                    [2024-01-20 14:25:12] SMS_LMS_Collector: Initializing connection to LMS database
+                  </div>
+                  <div className="text-xs text-muted-foreground p-2 border-l-2 border-success">
+                    [2024-01-20 14:25:13] SMS_LMS_Collector: Connection established
+                  </div>
+                  <div className="text-xs text-muted-foreground p-2 border-l-2 border-success">
+                    [2024-01-20 14:25:15] SMS_LMS_Collector: Query executed: SELECT * FROM sms_records WHERE processed = 0
+                  </div>
+                  <div className="text-xs text-muted-foreground p-2 border-l-2 border-success">
+                    [2024-01-20 14:25:15] SMS_LMS_Collector: Retrieved 45 records
+                  </div>
+                  <div className="text-xs text-muted-foreground p-2 border-l-2 border-success">
+                    [2024-01-20 14:25:16] SMS_LMS_Collector: Batch processing completed
                   </div>
                 </div>
               </CardContent>
@@ -478,47 +496,18 @@ export function StreamDetailPage() {
           </TabsContent>
 
           <TabsContent value="statistics" className="space-y-4">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium">Last Hour</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">3.6K</div>
-                  <p className="text-xs text-muted-foreground">Events processed</p>
-                </CardContent>
-              </Card>
+            <PerformanceStats 
+              throughputLastHour={520}
+              eventsLastHour={15420}
+              eventsLast24h={348960}
+              eventsLast7d={2443200}
+              errorRate={0.02}
+              retryCount={15}
+            />
+          </TabsContent>
 
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium">Last 24h</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">87.2K</div>
-                  <p className="text-xs text-muted-foreground">Events processed</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium">Error Rate</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">0.68%</div>
-                  <p className="text-xs text-muted-foreground">Last 24h average</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium">Retry Success</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">94.2%</div>
-                  <p className="text-xs text-muted-foreground">Successful retries</p>
-                </CardContent>
-              </Card>
-            </div>
+          <TabsContent value="alerts-logs" className="space-y-4">
+            <AlertsLogsPanel />
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-4">

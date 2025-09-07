@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { LoadingCard, LoadingSpinner } from "@/components/ui/loading";
-import { FlowCanvas } from "./FlowCanvas"; // Import FlowCanvas
-import { Play, Square, History, ChevronDown, CheckCircle, Clock, User } from "lucide-react";
+import { LoadingCard } from "@/components/ui/loading";
+import { FlowCanvas } from "./FlowCanvas";
+import { FlowHeader } from "./components/FlowHeader";
+import { VersionHistoryModal } from "./components/VersionHistoryModal";
+import { FlowDetailsPanel } from "./components/FlowDetailsPanel";
 import { useToast } from "@/hooks/use-toast";
 import { flowService, FlowVersion } from "@/services/flowService";
 
@@ -21,6 +18,7 @@ export function FlowDetailPage() {
   const [versions, setVersions] = useState<FlowVersion[]>([]);
   const [versionsLoading, setVersionsLoading] = useState(false);
   const [versionsOpen, setVersionsOpen] = useState(false);
+  const [selectedVersion, setSelectedVersion] = useState<FlowVersion | null>(null);
 
   useEffect(() => {
     const fetchFlowStructure = async () => {
@@ -110,34 +108,6 @@ export function FlowDetailPage() {
   if (!flow) {
     return <div>No flow found.</div>;
   }
-
-  const getFlowStatus = () => {
-    if (flow.is_running) return "running";
-    if (flow.is_deployed) return "deployed";
-    return "draft";
-  };
-
-  const getStatusBadge = () => {
-    const status = getFlowStatus();
-    switch (status) {
-      case "running":
-        return <Badge variant="default">🟢 Running</Badge>;
-      case "deployed":
-        return <Badge variant="secondary">🟡 Deployed</Badge>;
-      case "draft":
-        return <Badge variant="outline">📝 Draft</Badge>;
-      default:
-        return <Badge variant="outline">❓ Unknown</Badge>;
-    }
-  };
-
-  const canEdit = () => {
-    return !flow.is_deployed; // Only undeployed flows can be edited directly
-  };
-
-  const canStartStop = () => {
-    return flow.is_deployed; // Only deployed flows can be started/stopped
-  };
 
   // Helper function to determine node type based on name or other criteria
   const getNodeType = (nodeName?: string): string => {
@@ -233,7 +203,6 @@ export function FlowDetailPage() {
   };
 
   const handleCreateNewVersion = () => {
-    // For deployed flows, creating a new version means cloning to a new draft
     toast({
       title: "Creating New Version",
       description: "This will create a new draft version that can be edited.",
@@ -241,168 +210,124 @@ export function FlowDetailPage() {
     navigate(`/flows/${id}/clone`);
   };
 
+  const handleEditVersion = () => {
+    navigate(`/flows/${id}/edit`);
+  };
+
+  const handleToggleDeployment = async () => {
+    try {
+      if (flow.is_deployed) {
+        await flowService.undeployFlow(id!);
+        setFlow(prev => ({ ...prev, is_deployed: false, is_running: false }));
+        toast({
+          title: "Flow Undeployed",
+          description: "The flow has been undeployed successfully.",
+        });
+      } else {
+        await flowService.deployFlow(id!);
+        setFlow(prev => ({ ...prev, is_deployed: true }));
+        toast({
+          title: "Flow Deployed",
+          description: "The flow has been deployed successfully.",
+        });
+      }
+    } catch (err: any) {
+      console.error("Error toggling deployment:", err);
+      const errorMessage = err.response?.data?.error || err.message || "Error toggling deployment";
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleShowVersionHistory = () => {
+    setVersionsOpen(true);
+    if (versions.length === 0) {
+      fetchVersions();
+    }
+  };
+
+  const handleSelectVersion = (version: FlowVersion) => {
+    setSelectedVersion(version);
+  };
+
+  const handleActivateVersion = (version: FlowVersion) => {
+    activateVersion(version.version);
+  };
+
+  const handleExportVersion = (version: FlowVersion) => {
+    toast({
+      title: "Export Version",
+      description: `Exporting version ${version.version}...`,
+    });
+    // TODO: Implement export functionality
+  };
+
+  const handleCloneVersion = (version: FlowVersion) => {
+    toast({
+      title: "Clone Version",
+      description: `Cloning version ${version.version}...`,
+    });
+    // TODO: Implement clone functionality
+  };
+
+  const handleDeleteVersion = (version: FlowVersion) => {
+    toast({
+      title: "Delete Version",
+      description: `Deleting version ${version.version}...`,
+    });
+    // TODO: Implement delete functionality
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-3xl font-bold">{flow.name}</h1>
-          {getStatusBadge()}
-        </div>
-        <div className="flex items-center space-x-2">
-          {canStartStop() && !flow.is_running && (
-            <Button onClick={handleRunFlow}>
-              <Play className="h-4 w-4 mr-2" />
-              Start
-            </Button>
-          )}
-          {canStartStop() && flow.is_running && (
-            <Button variant="destructive" onClick={handleStopFlow}>
-              <Square className="h-4 w-4 mr-2" />
-              Stop
-            </Button>
-          )}
-          {/* Edit buttons removed for configuration view */}
-        </div>
-      </div>
+      {/* Enterprise Flow Header */}
+      <FlowHeader
+        flow={{
+          id: flow.id,
+          name: flow.name,
+          version: flow.version,
+          is_deployed: flow.is_deployed,
+          is_running: flow.is_running
+        }}
+        onCreateNewVersion={handleCreateNewVersion}
+        onEditVersion={handleEditVersion}
+        onToggleDeployment={handleToggleDeployment}
+        onShowVersionHistory={handleShowVersionHistory}
+        onExportVersion={() => handleExportVersion(selectedVersion!)}
+        onCloneVersion={() => handleCloneVersion(selectedVersion!)}
+        onDeleteVersion={() => handleDeleteVersion(selectedVersion!)}
+        isLoading={loading || versionsLoading}
+      />
 
-      {/* Flow Information */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="space-y-2">
-          <h3 className="font-semibold">Description</h3>
-          <p>{flow.description}</p>
-        </div>
-        <div className="space-y-2">
-          <h3 className="font-semibold">Created At</h3>
-          <p>{new Date(flow.created_at).toLocaleString()}</p>
-        </div>
-        <div className="space-y-2">
-          <h3 className="font-semibold">Created By</h3>
-          <p>{flow.created_by}</p>
-        </div>
-        <div className="space-y-2">
-          <h3 className="font-semibold">Current Version</h3>
-          <div className="flex items-center space-x-2">
-            <Badge variant="outline">v{flow.version || 1}</Badge>
-            <Collapsible open={versionsOpen} onOpenChange={handleVersionsToggle}>
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-6 px-2">
-                  <History className="h-3 w-3 mr-1" />
-                  Version History
-                  <ChevronDown className={`h-3 w-3 ml-1 transition-transform ${versionsOpen ? 'rotate-180' : ''}`} />
-                </Button>
-              </CollapsibleTrigger>
-            </Collapsible>
-          </div>
-        </div>
-      </div>
+      {/* Flow Details Panel */}
+      <FlowDetailsPanel 
+        flow={{
+          id: flow.id,
+          name: flow.name,
+          description: flow.description,
+          nodes: flow.nodes,
+          updated_at: flow.updated_at || flow.created_at,
+          updated_by: flow.updated_by,
+          created_by: flow.created_by
+        }}
+      />
 
-      {/* Version History Panel */}
-      <Collapsible open={versionsOpen} onOpenChange={setVersionsOpen}>
-        <CollapsibleContent className="space-y-4">
-          <div className="border border-border rounded-lg p-4 bg-muted/20">
-            <div className="flex items-center space-x-2 mb-4">
-              <History className="h-5 w-5" />
-              <h3 className="font-semibold">Version History</h3>
-            </div>
-            
-            {versionsLoading ? (
-              <div className="flex justify-center py-4">
-                <LoadingSpinner />
-              </div>
-            ) : versions.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Version</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created By</TableHead>
-                    <TableHead>Created At</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {versions.map((version) => (
-                    <TableRow key={version.id}>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <Badge variant={version.is_active ? "default" : "outline"}>
-                            v{version.version}
-                          </Badge>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          {version.is_active ? (
-                            <>
-                              <CheckCircle className="h-4 w-4 text-green-500" />
-                              <span className="text-green-700 font-medium">Active</span>
-                            </>
-                          ) : (
-                            <>
-                              <Clock className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-muted-foreground">Inactive</span>
-                            </>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <User className="h-4 w-4 text-muted-foreground" />
-                          <span>{version.created_by}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {new Date(version.created_at).toLocaleString()}
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm text-muted-foreground">
-                          {version.description || 'No description'}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        {!version.is_active && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="outline" size="sm">
-                                Activate
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Activate Version {version.version}</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  This will make version {version.version} the active version of this flow. 
-                                  The current active version will be deactivated. This action cannot be undone.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => activateVersion(version.version)}>
-                                  Activate Version
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        )}
-                        {version.is_active && (
-                          <Badge variant="secondary" className="text-xs">
-                            Current
-                          </Badge>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <div className="text-center py-4 text-muted-foreground">
-                No version history available
-              </div>
-            )}
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
+      {/* Version History Modal */}
+      <VersionHistoryModal
+        open={versionsOpen}
+        onOpenChange={setVersionsOpen}
+        versions={versions}
+        selectedVersion={selectedVersion}
+        onSelectVersion={handleSelectVersion}
+        onActivateVersion={handleActivateVersion}
+        onExportVersion={handleExportVersion}
+        onCloneVersion={handleCloneVersion}
+        onDeleteVersion={handleDeleteVersion}
+        isLoading={versionsLoading}
+      />
 
       {/* Flow Canvas */}
       <div className="h-[600px] border border-border rounded-lg">

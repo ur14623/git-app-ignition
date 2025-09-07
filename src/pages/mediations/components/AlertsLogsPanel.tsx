@@ -195,7 +195,7 @@ export function AlertsLogsPanel() {
               {alerts.map((alert) => (
                 <div 
                   key={alert.id} 
-                  className={`p-4 rounded-lg border ${
+                  className={`p-4 border ${
                     alert.acknowledged ? "opacity-60" : ""
                   } ${alert.acknowledged ? "bg-muted/30" : "bg-card"}`}
                 >

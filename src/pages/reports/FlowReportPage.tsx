@@ -135,7 +135,7 @@ export function FlowReportPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="metric-card hover-scale animate-fade-in">
           <div className="flex items-center gap-4">
-            <div className="p-4 bg-primary/10 rounded-2xl shadow-subtle">
+            <div className="p-4 bg-primary/10">
               <Activity className="h-7 w-7 text-primary" />
             </div>
             <div className="space-y-1">
@@ -148,7 +148,7 @@ export function FlowReportPage() {
 
         <div className="metric-card hover-scale animate-fade-in" style={{ animationDelay: '100ms' }}>
           <div className="flex items-center gap-4">
-            <div className="p-4 bg-success/10 rounded-2xl shadow-subtle">
+            <div className="p-4 bg-success/10">
               <BarChart3 className="h-7 w-7 text-success" />
             </div>
             <div className="space-y-1">
@@ -161,7 +161,7 @@ export function FlowReportPage() {
 
         <div className="metric-card hover-scale animate-fade-in" style={{ animationDelay: '200ms' }}>
           <div className="flex items-center gap-4">
-            <div className="p-4 bg-info/10 rounded-2xl shadow-subtle">
+            <div className="p-4 bg-info/10">
               <TrendingUp className="h-7 w-7 text-info" />
             </div>
             <div className="space-y-1">
@@ -174,7 +174,7 @@ export function FlowReportPage() {
 
         <div className="metric-card hover-scale animate-fade-in" style={{ animationDelay: '300ms' }}>
           <div className="flex items-center gap-4">
-            <div className="p-4 bg-muted/10 rounded-2xl shadow-subtle">
+            <div className="p-4 bg-muted/10">
               <FileText className="h-7 w-7 text-muted-foreground" />
             </div>
             <div className="space-y-1">
@@ -187,14 +187,14 @@ export function FlowReportPage() {
       </div>
 
       {/* Professional Filters Section */}
-      <div className="professional-card p-8 rounded-3xl animate-slide-up">
+      <div className="professional-card p-8 animate-slide-up">
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
             <Select defaultValue="all">
-              <SelectTrigger className="w-48 h-12 bg-background/80 border-border/60 rounded-xl shadow-subtle hover:shadow-card transition-all duration-200">
+              <SelectTrigger className="w-48 h-12 bg-background/80 border-border/60 transition-all duration-200">
                 <SelectValue placeholder="Flow Status" />
               </SelectTrigger>
-              <SelectContent className="border-border/60 shadow-floating">
+              <SelectContent className="border-border/60">
                 <SelectItem value="all">All Flows</SelectItem>
                 <SelectItem value="healthy">Healthy</SelectItem>
                 <SelectItem value="warning">Warning</SelectItem>
@@ -205,22 +205,22 @@ export function FlowReportPage() {
               <Calendar className="h-5 w-5 text-muted-foreground" />
               <Input 
                 type="date" 
-                className="w-auto h-12 bg-background/80 border-border/60 rounded-xl shadow-subtle focus:shadow-card transition-all duration-200" 
+                className="w-auto h-12 bg-background/80 border-border/60 transition-all duration-200" 
                 placeholder="From" 
               />
               <Input 
                 type="date" 
-                className="w-auto h-12 bg-background/80 border-border/60 rounded-xl shadow-subtle focus:shadow-card transition-all duration-200" 
+                className="w-auto h-12 bg-background/80 border-border/60 transition-all duration-200" 
                 placeholder="To" 
               />
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <Button variant="outline" size="lg" className="h-12 px-6 border-border/60 hover:border-primary/40 shadow-subtle hover:shadow-card">
+            <Button variant="outline" size="lg" className="h-12 px-6 border-border/60 hover:border-primary/40">
               <Download className="h-5 w-5 mr-2" />
               Export Data
             </Button>
-            <Button size="lg" className="h-12 px-6 bg-gradient-to-r from-primary to-primary/90 shadow-elegant hover:shadow-glow">
+            <Button size="lg" className="h-12 px-6 bg-gradient-to-r from-primary to-primary/90">
               <Filter className="h-5 w-5 mr-2" />
               Advanced Filters
             </Button>
@@ -229,10 +229,10 @@ export function FlowReportPage() {
       </div>
 
       {/* Professional Data Table */}
-      <div className="professional-card rounded-3xl overflow-hidden animate-scale-in">
+      <div className="professional-card overflow-hidden animate-scale-in">
         <div className="p-8 border-b border-border/40">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-primary/10 rounded-2xl">
+            <div className="p-3 bg-primary/10">
               <BarChart3 className="h-6 w-6 text-primary" />
             </div>
             <div>
@@ -298,9 +298,9 @@ export function FlowReportPage() {
       </div>
 
       {/* Professional Error Analysis */}
-      <div className="professional-card p-8 rounded-3xl animate-fade-in">
+      <div className="professional-card p-8 animate-fade-in">
         <div className="flex items-center gap-4 mb-8">
-          <div className="p-3 bg-warning/10 rounded-2xl">
+          <div className="p-3 bg-warning/10">
             <Activity className="h-6 w-6 text-warning" />
           </div>
           <div>
@@ -310,7 +310,7 @@ export function FlowReportPage() {
         </div>
         <div className="grid gap-6">
           {reports.map((report, index) => (
-            <div key={report.id} className="surface-interactive p-6 border border-border/40 rounded-2xl animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
+            <div key={report.id} className="surface-interactive p-6 border border-border/40 animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
                   <p className="font-semibold text-lg text-foreground">{report.flowName}</p>

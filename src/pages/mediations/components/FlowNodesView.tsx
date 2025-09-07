@@ -69,7 +69,7 @@ const PipelineNode = memo(({ data }: { data: StreamNode }) => {
   };
 
   return (
-    <div className={`bg-card border-2 rounded-lg p-4 min-w-[220px] shadow-md transition-all duration-200 ${getStatusColor(data.status)}`}>
+    <div className={`bg-card border-2 p-4 min-w-[220px] shadow-md transition-all duration-200 ${getStatusColor(data.status)}`}>
       <Handle 
         type="target" 
         position={Position.Left} 

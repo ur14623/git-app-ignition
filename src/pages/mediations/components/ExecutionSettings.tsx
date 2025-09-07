@@ -249,7 +249,7 @@ export function ExecutionSettings({
         </div>
 
         {hasChanges && (
-          <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
+          <div className="bg-warning/10 border border-warning/20 p-3">
             <div className="flex items-center gap-2 text-warning">
               <AlertTriangle className="h-4 w-4" />
               <span className="text-sm font-medium">Unsaved Changes</span>

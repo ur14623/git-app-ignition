@@ -39,7 +39,7 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 259 94% 51%;
 
-    --radius: 0.75rem;
+    --radius: 0rem;
 
     /* Flow Orchestrator Specific Colors - Enhanced */
     --success: 142 76% 36%;
@@ -305,7 +305,7 @@
   }
 
   .metric-card {
-    @apply professional-card p-6 rounded-2xl;
+    @apply professional-card p-6;
     background: var(--gradient-surface);
     position: relative;
     overflow: hidden;

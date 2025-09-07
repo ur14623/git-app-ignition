@@ -98,8 +98,6 @@ export function PerformanceStats({
 
   return (
     <div className="space-y-6">
-
-
       {/* Latest Throughput Chart */}
       <Card>
         <CardHeader>
@@ -122,16 +120,16 @@ export function PerformanceStats({
                 <YAxis 
                   className="text-muted-foreground"
                   fontSize={12}
-                  label={{ value: 'Records', angle: -90, position: 'insideLeft' }}
+                  label={{ value: 'Throughput', angle: -90, position: 'insideLeft' }}
+                  domain={[0, 30000]}
                   tickFormatter={(value) => `${value / 1000}K`}
                 />
                 <Tooltip 
                   contentStyle={{
                     backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '6px'
+                    border: '1px solid hsl(var(--border))'
                   }}
-                  formatter={(value) => [`${(value as number).toLocaleString()} records`, 'Records']}
+                  formatter={(value) => [`${(value as number).toLocaleString()}`, 'Throughput']}
                   labelFormatter={(label) => `${label} minutes`}
                 />
                 <Line 
@@ -178,8 +176,7 @@ export function PerformanceStats({
                 <Tooltip 
                   contentStyle={{
                     backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '6px'
+                    border: '1px solid hsl(var(--border))'
                   }}
                   formatter={(value) => [`${(value as number).toLocaleString()}`, 'Records']}
                   labelFormatter={(label) => `Category: ${label}`}
@@ -187,7 +184,6 @@ export function PerformanceStats({
                 <Bar 
                   dataKey="count" 
                   fill="hsl(var(--primary))"
-                  radius={[4, 4, 0, 0]}
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -195,7 +191,7 @@ export function PerformanceStats({
         </CardContent>
       </Card>
 
-      {/* Node Performance */}
+      {/* Node Performance Table */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -204,31 +200,51 @@ export function PerformanceStats({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {mockNodePerformance.map((node, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="font-medium">{node.name}</div>
-                  <Badge 
-                    variant={node.status === "running" ? "default" : "destructive"}
-                    className={node.status === "running" ? "bg-success/10 text-success border-success/20" : ""}
-                  >
-                    {node.status}
-                  </Badge>
-                </div>
-                
-                <div className="flex items-center gap-6 text-sm">
-                  <div className="text-muted-foreground">
-                    Throughput: <span className="font-medium text-foreground">{node.throughput}/hr</span>
-                  </div>
-                  <div className="text-muted-foreground">
-                    Errors: <span className={`font-medium ${node.errors > 0 ? 'text-destructive' : 'text-success'}`}>
-                      {node.errors}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-3 px-4 font-medium text-muted-foreground">Node</th>
+                  <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
+                  <th className="text-left py-3 px-4 font-medium text-muted-foreground">Throughput/hr</th>
+                  <th className="text-left py-3 px-4 font-medium text-muted-foreground">Errors</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b">
+                  <td className="py-3 px-4 font-medium">SFTP Collector</td>
+                  <td className="py-3 px-4">
+                    <Badge className="bg-success/10 text-success border-success/20">running</Badge>
+                  </td>
+                  <td className="py-3 px-4">520/hr</td>
+                  <td className="py-3 px-4 text-destructive font-medium">2</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-3 px-4 font-medium">ASCII Decoder</td>
+                  <td className="py-3 px-4">
+                    <Badge className="bg-success/10 text-success border-success/20">running</Badge>
+                  </td>
+                  <td className="py-3 px-4">515/hr</td>
+                  <td className="py-3 px-4 text-success font-medium">0</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-3 px-4 font-medium">Validation BLN</td>
+                  <td className="py-3 px-4">
+                    <Badge className="bg-warning/10 text-warning border-warning/20">partial</Badge>
+                  </td>
+                  <td className="py-3 px-4">412/hr</td>
+                  <td className="py-3 px-4 text-destructive font-medium">8</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-3 px-4 font-medium">FDC Distributor</td>
+                  <td className="py-3 px-4">
+                    <Badge className="bg-success/10 text-success border-success/20">running</Badge>
+                  </td>
+                  <td className="py-3 px-4">—</td>
+                  <td className="py-3 px-4">—</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </CardContent>
       </Card>
