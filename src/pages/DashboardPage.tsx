@@ -352,7 +352,7 @@ export function DashboardPage() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-6">
           <Card className="bg-success/5 border-success/20 shadow-subtle">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -400,10 +400,187 @@ export function DashboardPage() {
               </div>
             </CardContent>
           </Card>
+
+          <Card className="bg-destructive/5 border-destructive/20 shadow-subtle">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-destructive/10 rounded-lg">
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-destructive">
+                    22,088
+                  </div>
+                  <div className="text-sm text-muted-foreground">Total Errors</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-warning/5 border-warning/20 shadow-subtle">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-warning/10 rounded-lg">
+                  <AlertCircle className="h-5 w-5 text-warning" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-warning">
+                    237
+                  </div>
+                  <div className="text-sm text-muted-foreground">Total Warnings</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-info/5 border-info/20 shadow-subtle">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-info/10 rounded-lg">
+                  <Info className="h-5 w-5 text-info" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-info">
+                    72
+                  </div>
+                  <div className="text-sm text-muted-foreground">Info Messages</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Flows List (Controller Section) */}
+        <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-subtle">
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <CardTitle className="text-lg font-semibold">Flows</CardTitle>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex items-center gap-2">
+                  <label htmlFor="status-filter" className="text-sm font-medium text-muted-foreground">
+                    Filter by:
+                  </label>
+                  <select 
+                    id="status-filter"
+                    className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    defaultValue="all"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="running">Running</option>
+                    <option value="stopped">Stopped</option>
+                    <option value="degraded">Degraded</option>
+                  </select>
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search flows..."
+                    className="h-9 w-full sm:w-64 rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  />
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-hidden rounded-lg border border-border">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50 border-b border-border sticky top-0 z-10">
+                    <tr>
+                      <th className="text-left font-medium text-muted-foreground px-4 py-3">
+                        Flow Name
+                      </th>
+                      <th className="text-left font-medium text-muted-foreground px-4 py-3">
+                        Status
+                      </th>
+                      <th className="text-left font-medium text-muted-foreground px-4 py-3">
+                        Health
+                      </th>
+                      <th className="text-left font-medium text-muted-foreground px-4 py-3">
+                        Throughput
+                      </th>
+                      <th className="text-left font-medium text-muted-foreground px-4 py-3">
+                        Nodes
+                      </th>
+                      <th className="text-left font-medium text-muted-foreground px-4 py-3">
+                        Uptime
+                      </th>
+                      <th className="text-left font-medium text-muted-foreground px-4 py-3">
+                        SLA
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {flowsData.slice(0, 2).map((flow) => (
+                      <tr 
+                        key={flow.id}
+                        className="hover:bg-muted/30 transition-colors cursor-pointer"
+                        onClick={() => navigate(`/flows/${flow.id}`)}
+                      >
+                        <td className="px-4 py-3 font-medium text-foreground">
+                          {flow.name}
+                        </td>
+                        <td className="px-4 py-3">
+                          <Badge 
+                            variant={flow.status === "running" ? "default" : "destructive"} 
+                            className="text-xs font-medium"
+                          >
+                            {flow.status.toUpperCase()}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-3">
+                          <Badge 
+                            variant={
+                              flow.health === "healthy" ? "default" : 
+                              flow.health === "degraded" ? "secondary" : 
+                              "destructive"
+                            } 
+                            className="text-xs font-medium"
+                          >
+                            {flow.health}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-3 font-medium">
+                          {flow.throughput.toLocaleString()}/sec
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {flow.nodes}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {flow.uptime}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className={`font-medium ${flow.slaCompliance >= 99 ? 'text-success' : flow.slaCompliance >= 95 ? 'text-warning' : 'text-destructive'}`}>
+                            {flow.slaCompliance}%
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-muted/20">
+              <div className="text-sm text-muted-foreground">
+                Showing 1 to 2 of 2 flows
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" disabled>
+                  Previous
+                </Button>
+                <Button variant="outline" size="sm" disabled>
+                  Next
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Streams Table */}
         <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-subtle">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Streams</CardTitle>
+          </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-hidden rounded-lg border border-border">
               <div className="overflow-x-auto">
