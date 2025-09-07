@@ -450,11 +450,11 @@ export function DashboardPage() {
           </Card>
         </div>
 
-        {/* Flows List (Controller Section) */}
+        {/* Streams Table */}
         <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-subtle">
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <CardTitle className="text-lg font-semibold">Flows</CardTitle>
+              <CardTitle className="text-lg font-semibold">Streams</CardTitle>
               <div className="flex flex-col sm:flex-row gap-2">
                 <div className="flex items-center gap-2">
                   <label htmlFor="status-filter" className="text-sm font-medium text-muted-foreground">
@@ -466,9 +466,9 @@ export function DashboardPage() {
                     defaultValue="all"
                   >
                     <option value="all">All Status</option>
-                    <option value="running">Running</option>
-                    <option value="stopped">Stopped</option>
-                    <option value="degraded">Degraded</option>
+                    <option value="RUNNING">Running</option>
+                    <option value="STOPPED">Stopped</option>
+                    <option value="PARTIAL">Partial</option>
                   </select>
                 </div>
                 <div className="relative">
@@ -480,106 +480,6 @@ export function DashboardPage() {
                 </div>
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-hidden rounded-lg border border-border">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50 border-b border-border sticky top-0 z-10">
-                    <tr>
-                      <th className="text-left font-medium text-muted-foreground px-4 py-3">
-                        Flow Name
-                      </th>
-                      <th className="text-left font-medium text-muted-foreground px-4 py-3">
-                        Status
-                      </th>
-                      <th className="text-left font-medium text-muted-foreground px-4 py-3">
-                        Health
-                      </th>
-                      <th className="text-left font-medium text-muted-foreground px-4 py-3">
-                        Throughput
-                      </th>
-                      <th className="text-left font-medium text-muted-foreground px-4 py-3">
-                        Nodes
-                      </th>
-                      <th className="text-left font-medium text-muted-foreground px-4 py-3">
-                        Uptime
-                      </th>
-                      <th className="text-left font-medium text-muted-foreground px-4 py-3">
-                        SLA
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {flowsData.slice(0, 2).map((flow) => (
-                      <tr 
-                        key={flow.id}
-                        className="hover:bg-muted/30 transition-colors cursor-pointer"
-                        onClick={() => navigate(`/flows/${flow.id}`)}
-                      >
-                        <td className="px-4 py-3 font-medium text-foreground">
-                          {flow.name}
-                        </td>
-                        <td className="px-4 py-3">
-                          <Badge 
-                            variant={flow.status === "running" ? "default" : "destructive"} 
-                            className="text-xs font-medium"
-                          >
-                            {flow.status.toUpperCase()}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3">
-                          <Badge 
-                            variant={
-                              flow.health === "healthy" ? "default" : 
-                              flow.health === "degraded" ? "secondary" : 
-                              "destructive"
-                            } 
-                            className="text-xs font-medium"
-                          >
-                            {flow.health}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3 font-medium">
-                          {flow.throughput.toLocaleString()}/sec
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">
-                          {flow.nodes}
-                        </td>
-                        <td className="px-4 py-3 text-muted-foreground">
-                          {flow.uptime}
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className={`font-medium ${flow.slaCompliance >= 99 ? 'text-success' : flow.slaCompliance >= 95 ? 'text-warning' : 'text-destructive'}`}>
-                            {flow.slaCompliance}%
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-muted/20">
-              <div className="text-sm text-muted-foreground">
-                Showing 1 to 2 of 2 flows
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" disabled>
-                  Previous
-                </Button>
-                <Button variant="outline" size="sm" disabled>
-                  Next
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Streams Table */}
-        <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-subtle">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Streams</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-hidden rounded-lg border border-border">
@@ -638,6 +538,19 @@ export function DashboardPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+            <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-muted/20">
+              <div className="text-sm text-muted-foreground">
+                Showing 1 to {streamsData.length} of {streamsData.length} flows
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" disabled>
+                  Previous
+                </Button>
+                <Button variant="outline" size="sm" disabled>
+                  Next
+                </Button>
               </div>
             </div>
           </CardContent>
