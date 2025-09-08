@@ -35,8 +35,16 @@ import {
   Settings,
   Bell,
   FileText,
-  Download
+  Download,
+  Edit,
+  Plus,
+  Square,
+  History,
+  MoreVertical,
+  Copy,
+  Trash2
 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { PerformanceStats } from "@/pages/mediations/components/PerformanceStats";
 import { AlertsLogsPanel } from "@/pages/mediations/components/AlertsLogsPanel";
 import { useToast } from "@/hooks/use-toast";
@@ -235,22 +243,87 @@ export function FlowDetailPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              {!flow.is_running && (
-                <Button size="sm" variant="outline" className="gap-2" onClick={handleRunFlow}>
+              {/* Edit/Create New Version Button */}
+              {flow.is_deployed ? (
+                <Button 
+                  variant="outline"
+                  size="icon"
+                  title="Create New Version"
+                  onClick={() => toast({ title: "Create New Version", description: "Creating new version..." })}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              ) : (
+                <Button 
+                  variant="outline"
+                  size="icon"
+                  title="Edit Version"
+                  onClick={() => navigate(`/flows/${id}/edit`)}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+              )}
+              
+              {/* Deploy/Undeploy Button */}
+              <Button 
+                variant={flow.is_deployed ? "destructive" : "default"}
+                size="icon"
+                title={flow.is_deployed ? "Undeploy" : "Deploy"}
+                onClick={() => {
+                  setFlow(prev => ({ ...prev, is_deployed: !prev.is_deployed }));
+                  toast({
+                    title: flow.is_deployed ? "Flow Undeployed" : "Flow Deployed",
+                    description: flow.is_deployed ? "Flow has been undeployed" : "Flow has been deployed successfully"
+                  });
+                }}
+              >
+                {flow.is_deployed ? (
+                  <Square className="h-4 w-4" />
+                ) : (
                   <Play className="h-4 w-4" />
-                  Start
-                </Button>
-              )}
-              {flow.is_running && (
-                <Button size="sm" variant="outline" className="gap-2" onClick={handleStopFlow}>
-                  <Pause className="h-4 w-4" />
-                  Stop
-                </Button>
-              )}
-              <Button size="sm" variant="outline" className="gap-2">
-                <RotateCcw className="h-4 w-4" />
-                Restart
+                )}
               </Button>
+              
+              {/* Version History Button */}
+              <Button 
+                variant="outline" 
+                size="icon"
+                title="Version History"
+                onClick={() => toast({ title: "Version History", description: "Opening version history..." })}
+              >
+                <History className="h-4 w-4" />
+              </Button>
+
+              {/* Three Dots Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    title="More Actions"
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => toast({ title: "Export Version", description: "Exporting version..." })}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Version
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => toast({ title: "Clone Version", description: "Cloning version..." })}>
+                    <Copy className="h-4 w-4 mr-2" />
+                    Clone Version
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => toast({ title: "Delete Version", description: "Deleting version..." })}
+                    disabled={flow.is_deployed}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Version
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
