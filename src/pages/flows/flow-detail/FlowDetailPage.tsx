@@ -224,25 +224,60 @@ export function FlowDetailPage() {
                 className="gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Back to Dashboard
+                back
               </Button>
               
-              <div className="space-y-1">
-                <div className="text-xs text-muted-foreground">
-                  Dashboard → Flows → {flow.name}
-                </div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold text-foreground">
-                    {flow.name}
-                  </h1>
-                  <Badge variant="outline" className="text-xs">
-                    v{flow.version}
-                  </Badge>
-                </div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-bold text-foreground">
+                  {flow.name}
+                </h1>
+                <Badge variant="outline" className="text-xs">
+                  v{flow.version}
+                </Badge>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
+              {/* Flow Execution Controls */}
+              {!flow.is_running && (
+                <Button 
+                  size="icon" 
+                  variant="outline" 
+                  title="Start Flow"
+                  onClick={handleRunFlow}
+                >
+                  <Play className="h-4 w-4" />
+                </Button>
+              )}
+              {flow.is_running && (
+                <Button 
+                  size="icon" 
+                  variant="outline" 
+                  title="Stop Flow"
+                  onClick={handleStopFlow}
+                >
+                  <Pause className="h-4 w-4" />
+                </Button>
+              )}
+              <Button 
+                size="icon" 
+                variant="outline" 
+                title="Restart Flow"
+                onClick={() => {
+                  if (flow.is_running) {
+                    handleStopFlow();
+                    setTimeout(() => handleRunFlow(), 1000);
+                  } else {
+                    handleRunFlow();
+                  }
+                }}
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+              
+              {/* Separator */}
+              <div className="h-6 w-px bg-border" />
+              
               {/* Edit/Create New Version Button */}
               {flow.is_deployed ? (
                 <Button 
